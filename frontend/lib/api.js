@@ -7,7 +7,9 @@ export async function api(path, { method = 'GET', body, auth = 'am_token' } = {}
   const headers = { 'Content-Type': 'application/json' };
   const tok = auth && getToken(auth);
   if (tok) headers.Authorization = `Bearer ${tok}`;
-  const r = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  let r;
+  try { r = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined }); }
+  catch { throw new Error('Could not connect to the server. Please check your internet and try again.'); }
   const data = await r.json().catch(() => ({}));
   if (!r.ok) { const e = new Error(data.error || 'Request failed'); e.status = r.status; throw e; }
   return data;

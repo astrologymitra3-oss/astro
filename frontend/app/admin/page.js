@@ -80,10 +80,10 @@ function Orders({ initial }) {
               <td>{o.user_name}<br /><small>{o.user_email}<br />{o.user_phone}</small></td>
               <td>{o.amount}{o.razorpay_payment_id === 'TEST-BYPASS' && <><br /><small>test</small></>}</td>
               <td><span className={`st st-${o.status}`}>{STATUS[o.status]}</span>{o.status === 'ready' && <><br /><small>{o.emailed ? 'Emailed ✓' : 'Not emailed'}</small></>}{o.error && <><br /><small className="err">{o.error}</small></>}</td>
-              <td><small>{o.status === 'pending' ? '-' : fmt(o.release_at)}</small></td>
+              <td><small>{o.status === 'pending' ? '-' : fmt(o.release_at)}</small>{o.status !== 'pending' && new Date(o.release_at) > Date.now() && <><br /><small className="err">Hidden from customer till then</small></>}</td>
               <td className="ad-act">
                 <button onClick={() => setView(o)}>View</button>
-                {o.status === 'ready' && <button onClick={() => downloadPdf(`/api/admin/orders/${o.id}/pdf`, `AM${o.id}-${o.service}.pdf`, A).catch((e) => setMsg({ err: e.message }))}>PDF</button>}
+                {o.status === 'ready' && <button onClick={() => downloadPdf(`/api/admin/orders/${o.id}/pdf`, `AM${o.id}-${o.service}.pdf`, A).catch((e) => setMsg({ err: e.message }))}>{new Date(o.release_at) > Date.now() ? 'Preview PDF (not yet released)' : 'PDF'}</button>}
                 {o.status === 'ready' && <button className="wa" onClick={() => share(o, 'cust')}>WhatsApp customer</button>}
                 <button className="wa" onClick={() => share(o, 'me')}>WhatsApp me</button>
                 {o.status === 'ready' && <button onClick={() => act(o, 'email')}>Email</button>}
