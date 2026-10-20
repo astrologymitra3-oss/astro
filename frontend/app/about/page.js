@@ -1,28 +1,37 @@
 import Link from 'next/link';
+import Banner from '../../components/Banner';
 
-export const metadata = { title: 'About Us', description: 'AstrologyMitra brings authentic Vedic, Lal Kitab, KP astrology, numerology and tarot guidance in Hindi and English.' };
+export const metadata = { title: 'About Us', description: 'AstrologyMitra prepares Vedic, Lal Kitab, KP, numerology and tarot reports in Hindi and English from New Delhi.' };
 
 export default function About() {
   return (
     <>
-      <section className="pbanner"><div className="wrap"><div className="crumb">Home / About Us</div><h1>About AstrologyMitra</h1><p>Your trusted friend (mitra) for authentic astrological guidance.</p></div></section>
-      <div className="prose">
-        <p>AstrologyMitra was started in New Delhi with a simple purpose — to make authentic, personalised astrology available to every family in a language they are comfortable with. Too often, people receive generic predictions that have nothing to do with their own chart. We believe every person deserves guidance based on the actual position of the planets at the moment of their birth.</p>
-        <h2>What we do</h2>
-        <p>We prepare detailed, personalised reports across ten services — Complete Vedic Kundli, Lal Kitab Kundli, Varshphal, Numerology, Kundli Milan, Dosha analysis, Gemstone and Yantra recommendations, Tarot reading and KP Kundli. Every report is available in both Hindi and English and is delivered as a beautifully designed PDF that you can keep and refer to for years.</p>
-        <h2>How your report is prepared</h2>
-        <ul>
-          <li><b>Precise calculations:</b> planetary positions are computed with a high-precision astronomical ephemeris using the Lahiri (Chitrapaksha) ayanamsa, the standard adopted by the Government of India.</li>
-          <li><b>Classical methods:</b> interpretation follows the Parashari system for Vedic astrology, the original principles of Lal Kitab, Krishnamurti Paddhati for KP, and Chaldean & Pythagorean systems for numerology.</li>
-          <li><b>Personal guidance:</b> each report is prepared by Pandit ji specifically for your chart, with practical remedies — mantras, gemstones, yantras and Lal Kitab upay — that fit into everyday life.</li>
+      <Banner title="About Us" sub="ज्योतिष मित्र, New Delhi" img="/img/hero-temple.jpg" />
+      <div className="wrap split" style={{ padding: '50px 20px 20px' }}>
+        <div>
+          <h2>Why we started AstrologyMitra</h2>
+          <p>Most families in India have someone they go to for kundli and muhurat. Many people today live far from that person, or get answers that are too short to understand. We started AstrologyMitra in New Delhi so that anyone can get a proper written report, in Hindi or English, prepared from their own birth details.</p>
+          <p>We do not write sun-sign predictions. Every report starts with your chart, calculated for the minute and place of your birth.</p>
+        </div>
+        <div className="photo" style={{ aspectRatio: '4/3' }}><img src="/img/mala.jpg" alt="Rudraksha mala" /></div>
+      </div>
+      <div className="prose" style={{ paddingTop: 10 }}>
+        <h2>What we prepare</h2>
+        <p>Janam Kundli, Lal Kitab Kundli, Varshphal, Numerology, Kundli Milan, Dosha reports (Manglik, Kaal Sarp, Pitru, Sade Sati), Gemstone and Yantra suggestions, Tarot readings and KP Kundli. Each one is a 10 to 15 page PDF with charts, tables and a full written reading.</p>
+        <h2>The methods we follow</h2>
+        <ul className="ticks">
+          <li>Lahiri (Chitrapaksha) ayanamsa, the same standard used by Indian panchangs.</li>
+          <li>Parashari system for Vedic kundli, the original rules of Lal Kitab, and Krishnamurti Paddhati with Placidus cusps for KP.</li>
+          <li>Chaldean and Pythagorean values for name numerology, Lo Shu grid for birth date numbers.</li>
+          <li>Remedies that are simple and affordable: mantra, daan, Lal Kitab upay, and gemstones only where the chart supports them.</li>
         </ul>
-        <h2>Our promise</h2>
-        <ul>
-          <li>Your birth details are kept private and used only to prepare your report.</li>
-          <li>No fear-mongering — doshas and difficult periods are explained honestly, along with what you can do about them.</li>
-          <li>Secure payments through Razorpay and permanent access to your reports from your dashboard.</li>
+        <h2>What you can expect from us</h2>
+        <ul className="ticks">
+          <li>Your birth details stay private and are used only for your report.</li>
+          <li>Doshas and difficult periods are explained honestly, without creating fear.</li>
+          <li>Your reports stay in your account. Download them whenever you need.</li>
         </ul>
-        <p style={{ marginTop: 30 }}><Link href="/services" className="btn">Explore our services</Link></p>
+        <p style={{ marginTop: 26 }}><Link href="/services" className="btn">See all services</Link></p>
       </div>
     </>
   );

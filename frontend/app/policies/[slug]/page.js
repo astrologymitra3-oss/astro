@@ -4,7 +4,7 @@ const UPDATED = 'October 2026';
 const C = 'astrologymitra3@gmail.com';
 const P = {
   'privacy-policy': ['Privacy Policy', [
-    ['Information we collect', 'When you order a report we collect your name, email address, mobile number and the details needed to prepare the report — such as date, time and place of birth, gender, your question (for tarot) or your concern (for yantra). For Kundli Milan we collect the birth details of both persons. Payment is processed by Razorpay; we do not receive or store your card, UPI or bank details.'],
+    ['Information we collect', 'When you order a report we collect your name, email address, mobile number and the details needed to prepare the report, such as date, time and place of birth, gender, your question (for tarot) or your concern (for yantra). For Kundli Milan we collect the birth details of both persons. Payment is processed by Razorpay; we do not receive or store your card, UPI or bank details.'],
     ['How we use your information', 'Your information is used only to calculate your chart, prepare and deliver your report, send you order and delivery emails, and respond to your queries. We do not sell, rent or share your personal information with third parties for marketing.'],
     ['Service providers', 'To deliver the service we use trusted providers: Razorpay for payments, a secure cloud server and database for hosting, an email provider for delivery, OpenStreetMap for locating your place of birth, and an AI language service that helps Pandit ji draft the written interpretation of your computed chart. Only the minimum data required is shared with them.'],
     ['Data security', 'Your account is protected by an encrypted password and all communication with our website takes place over a secure HTTPS connection. Reports are available only to you through your login, or through a private download link we share with you.'],
@@ -53,7 +53,7 @@ export default function Policy({ params }) {
   if (!p) notFound();
   return (
     <>
-      <section className="pbanner"><div className="wrap"><div className="crumb">Home / {p[0]}</div><h1>{p[0]}</h1><p>Last updated: {UPDATED}</p></div></section>
+      <section className="pbanner" style={{ backgroundImage: 'url(/img/temple.jpg)' }}><div className="wrap"><div className="crumb">Home / {p[0]}</div><h1>{p[0]}</h1><p>Last updated: {UPDATED}</p></div></section>
       <div className="prose">{p[1].map(([h, t]) => <div key={h}><h2>{h}</h2><p>{t}</p></div>)}</div>
     </>
   );

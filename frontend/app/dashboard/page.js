@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, getToken, setToken, downloadPdf, payWithRazorpay } from '../../lib/api';
-import { ServiceArt } from '../../components/Art';
 
 const left = (t) => {
   const m = Math.max(0, Math.ceil((new Date(t) - Date.now()) / 60000));
@@ -43,10 +42,10 @@ export default function Dashboard() {
 
   return (
     <>
-      <section className="pbanner"><div className="wrap"><div className="crumb">Home / My Dashboard</div><h1>Namaste{me ? `, ${me.name}` : ''}</h1><p>{me ? `${me.email} · ${me.phone || ''}` : 'Your reports and orders'}</p></div></section>
+      <section className="pbanner" style={{ backgroundImage: 'url(/img/hero-diya.jpg)' }}><div className="wrap"><div className="crumb">Home / My Dashboard</div><h1>Namaste{me ? `, ${me.name}` : ''}</h1><p>{me ? `${me.email} · ${me.phone || ''}` : 'Your reports and orders'}</p></div></section>
       <div className="wrap dash">
         <div className="dash-head"><h2 style={{ margin: 0 }}>My Reports</h2><div style={{ display: 'flex', gap: 10 }}><Link href="/services" className="btn btn-sm">Order a new report</Link><button className="btn btn-sm btn-line" onClick={logout}>Logout</button></div></div>
-        {isNew && <div className="note">Thank you! Your order AM-{isNew} is confirmed. Pandit ji is preparing your report — it will appear here and on your email.</div>}
+        {isNew && <div className="note">Thank you! Your order AM-{isNew} is confirmed. Pandit ji is preparing your report, it will appear here and on your email.</div>}
         {msg.err && <div className="alert">{msg.err}</div>}{msg.ok && <div className="note">{msg.ok}</div>}
         {!orders ? <p className="muted">Loading…</p> : orders.length === 0 ? (
           <div className="empty"><h3>No reports yet</h3><p className="muted">Choose a service to get your first personalised report.</p><Link href="/services" className="btn">Browse Services</Link></div>
@@ -54,11 +53,11 @@ export default function Dashboard() {
           <div className="orders">
             {orders.map((o) => (
               <div className="ocard" key={o.id}>
-                <ServiceArt slug={o.service} />
+                <img src={`/img/${o.service}.jpg`} alt="" />
                 <div>
                   <h3>{o.name}</h3>
                   <div className="meta">Order AM-{o.id} · For {o.for} · {o.language === 'hi' ? 'Hindi' : 'English'} · ₹{o.amount} · {new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-                  {o.status === 'preparing' && <div className="prep"><span className="spinner" />Pandit ji is preparing your report{o.release_at && new Date(o.release_at) > Date.now() ? ` — expected in about ${left(o.release_at)}` : ' — almost ready'}</div>}
+                  {o.status === 'preparing' && <div className="prep"><span className="spinner" />Pandit ji is preparing your report{o.release_at && new Date(o.release_at) > Date.now() ? `, expected in about ${left(o.release_at)}` : ', almost ready'}</div>}
                 </div>
                 <div>
                   {o.status === 'ready' && <button className="btn btn-sm" onClick={() => dl(o)}>Download PDF</button>}

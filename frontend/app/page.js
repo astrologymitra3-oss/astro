@@ -1,83 +1,75 @@
 import Link from 'next/link';
 import { HeroSlider, ServicesGrid, Faq } from '../components/Blocks';
-import { Icon } from '../components/Art';
 
-const TRUST = [
-  ['calc', 'Precise Calculations', 'Lahiri ayanamsa, high-precision ephemeris'],
-  ['user', 'Prepared by Pandit ji', 'Classical Parashari, Lal Kitab & KP'],
-  ['lang', 'Hindi & English', 'Choose your report language'],
-  ['lock', 'Secure Payments', 'Razorpay — UPI, cards, netbanking'],
-  ['shield', '100% Private', 'Your birth details stay confidential'],
-  ['doc', '10-15 Page PDF', 'Download anytime from your dashboard'],
-];
-const STEPS = [
-  ['form', 'Choose a service', 'Pick the report you need and fill in your birth details in under a minute.'],
-  ['pay', 'Pay securely', 'Complete the payment through Razorpay using UPI, card or netbanking.'],
-  ['star', 'Pandit ji prepares it', 'Your chart is calculated and your personalised report is prepared.'],
-  ['download', 'Download your PDF', 'Get the report in your dashboard and on your email — keep it forever.'],
-];
 const FAQ = [
-  ['What details do I need?', 'For most reports you need your date of birth, exact time of birth and place of birth. Numerology and Tarot need only your name and date of birth. Kundli Milan needs the birth details of both the boy and the girl.'],
-  ['Can I get the report in Hindi?', 'Yes. Every report is available in Hindi and English — simply choose the language before you pay.'],
-  ['How will I receive my report?', 'Your report is delivered as a PDF to your AstrologyMitra dashboard and to your registered email. You can download it as many times as you like.'],
-  ['How accurate are the calculations?', 'Planetary positions are computed with a high-precision astronomical ephemeris using the Lahiri (Chitrapaksha) ayanamsa, the standard used by the Government of India. An accurate birth time gives the most precise results.'],
-  ['What if I do not know my exact birth time?', 'Use the closest time you know. Numerology and Tarot reports do not need a birth time at all. For time-sensitive reports such as KP, a precise time matters most.'],
-  ['Is my data safe?', 'Yes. Your details are used only to prepare your report, are never shared with anyone, and payments are processed securely by Razorpay — we never see your card details.'],
+  ['What details do I need to give?', 'Date of birth, exact time of birth and place of birth. Numerology and Tarot need only your name and date of birth. For Kundli Milan, keep the birth details of both the boy and the girl ready.'],
+  ['Can I get the report in Hindi?', 'Yes. Choose हिन्दी or English in the form before payment. The full report, including charts and tables, comes in the language you choose.'],
+  ['How will I receive the report?', 'As a PDF in your AstrologyMitra account (My Dashboard) and on your email. You can download it as many times as you want.'],
+  ['I do not know my exact birth time. What should I do?', 'Enter the closest time you know, for example from your birth certificate or what your family remembers. Numerology and Tarot do not need a birth time at all.'],
+  ['Which ayanamsa and system do you use?', 'Lahiri (Chitrapaksha) ayanamsa with the Parashari system for Vedic reports, Placidus cusps for KP, and Chaldean values for name numerology.'],
+  ['Is my information kept private?', 'Yes. Your details are used only to prepare your report and are never shared. Payments go through Razorpay, so we never see your card or UPI details.'],
 ];
 
 export default function Home() {
   return (
     <>
       <HeroSlider />
-      <div className="wrap"><div className="trust">{TRUST.map(([i, t, s]) => <div key={t}><span className="ti"><Icon name={i} /></span><b>{t}</b><span>{s}</span></div>)}</div></div>
+      <div className="facts">
+        <div className="wrap">
+          <div><b>Lahiri ayanamsa</b>Same standard as Indian panchangs</div>
+          <div><b>हिन्दी & English</b>Choose the report language</div>
+          <div><b>10-15 page PDF</b>Charts, tables and full reading</div>
+          <div><b>Razorpay</b>UPI, cards and netbanking</div>
+        </div>
+      </div>
 
       <section className="sec" id="services">
         <div className="wrap">
-          <div className="sec-head"><span className="kick">Our Services</span><h2>Personalised Reports for Every Question of Life</h2><p className="muted">Ten detailed reports covering Vedic, Lal Kitab and KP astrology, numerology, matchmaking, doshas, gemstones, yantras and tarot.</p></div>
+          <div className="sec-title"><div className="hi">हमारी सेवाएँ</div><h2>Choose your report</h2><p>Every report is prepared from your own birth details. Nothing is copied from sun-sign columns.</p></div>
           <ServicesGrid />
         </div>
       </section>
 
-      <section className="sec sec-dark">
-        <div className="wrap">
-          <div className="sec-head"><span className="kick">How It Works</span><h2>Your Report in Four Simple Steps</h2></div>
-          <div className="steps">{STEPS.map(([i, t, d]) => <div className="step" key={t}><div className="ti"><Icon name={i} size={26} /></div><h3>{t}</h3><p>{d}</p></div>)}</div>
-        </div>
-      </section>
-
-      <section className="sec sec-alt">
+      <section className="sec sec-white">
         <div className="wrap split">
+          <div className="photo" style={{ aspectRatio: '4/3' }}><img src="/img/ritual.jpg" alt="Lighting the sacred fire during a puja" loading="lazy" /></div>
           <div>
-            <span className="hindi">॥ श्री गणेशाय नमः ॥</span>
-            <h2>A Report You Will Actually Read</h2>
-            <p className="muted">Every report is a beautifully designed 10 to 15 page PDF — charts, tables and clear explanations written specifically for your chart, not generic sun-sign text.</p>
-            <ul className="ticks">
-              <li>North Indian Lagna, Chandra and Navamsa charts</li>
-              <li>Planetary positions with nakshatra, pada and lordship</li>
-              <li>Panchang and Avakahada Chakra at birth</li>
-              <li>Vimshottari dasha timeline with current periods</li>
-              <li>Yogas, doshas and Sade Sati with exact dates</li>
-              <li>Practical remedies — mantra, gemstone, upay and lucky factors</li>
-            </ul>
-            <Link href="/services/vedic-kundli" className="btn" style={{ marginTop: 22 }}>Get Your Kundli</Link>
-          </div>
-          <div className="pdfmock" aria-hidden="true">
-            <div className="om">ॐ</div><div className="gn">॥ श्री गणेशाय नमः ॥</div>
-            <div className="bd">COMPLETE VEDIC KUNDLI<small>Your Name · Date · Place</small></div>
-            <div className="ft">ASTROLOGY<b>MITRA</b></div>
+            <h2>How your report is prepared</h2>
+            <p className="muted">Once you place the order, this is what happens:</p>
+            <ol className="olist">
+              <li><b>Your chart is calculated</b>Planet positions are worked out for the exact minute and place of your birth.</li>
+              <li><b>Pandit ji studies the chart</b>Lagna, dasha, yogas, doshas and transits are read together, not one by one.</li>
+              <li><b>The report is written for you</b>In Hindi or English, with the charts and tables you would get from a traditional jyotishi.</li>
+              <li><b>Delivered to your account and email</b>Download it from My Dashboard whenever you need it.</li>
+            </ol>
           </div>
         </div>
       </section>
 
       <section className="sec">
         <div className="wrap">
-          <div className="sec-head"><span className="kick">FAQ</span><h2>Frequently Asked Questions</h2></div>
-          <Faq items={FAQ} />
+          <div className="sec-title"><div className="hi">नमूना रिपोर्ट</div><h2>Pages from a real report</h2><p>This is what your PDF looks like. These pages are from a sample Kundli and a Kundli Milan report.</p></div>
+          <div className="samples">
+            <figure><img src="/img/sample-vedic-kundli-hi-0.jpg" alt="Report cover" loading="lazy" /><figcaption>Cover page (Hindi)</figcaption></figure>
+            <figure><img src="/img/sample-vedic-kundli-hi-1.jpg" alt="Birth details and panchang" loading="lazy" /><figcaption>Birth details, panchang, avakahada</figcaption></figure>
+            <figure><img src="/img/sample-vedic-kundli-en-2.jpg" alt="Planetary positions" loading="lazy" /><figcaption>Planetary positions (English)</figcaption></figure>
+            <figure><img src="/img/sample-kundli-milan-en-4.jpg" alt="Ashtakoot guna milan" loading="lazy" /><figcaption>Ashtakoot guna milan</figcaption></figure>
+          </div>
         </div>
       </section>
 
-      <section className="sec" style={{ paddingTop: 0 }}>
-        <div className="wrap"><div className="cta"><div><h2>Begin with your complete Kundli</h2><p style={{ margin: 0 }}>Detailed, personalised and available in Hindi & English.</p></div><Link href="/services" className="btn">Explore Services</Link></div></div>
+      <section className="sec sec-white">
+        <div className="wrap split">
+          <div>
+            <div className="sec-title" style={{ marginBottom: 20 }}><div className="hi">अक्सर पूछे जाने वाले प्रश्न</div><h2>Questions people ask us</h2></div>
+            <Faq items={FAQ} />
+          </div>
+          <div className="photo" style={{ aspectRatio: '3/4' }}><img src="/img/ganesha.jpg" alt="Ganesha idol" loading="lazy" /></div>
+        </div>
+      </section>
+
+      <section className="sec">
+        <div className="wrap"><div className="cta"><div><h2>Start with your Janam Kundli</h2><p>The most detailed report, and the base for every other reading.</p></div><Link href="/services/vedic-kundli" className="btn">Order Vedic Kundli</Link></div></div>
       </section>
     </>
   );
