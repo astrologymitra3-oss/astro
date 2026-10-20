@@ -1,0 +1,4 @@
+import AuthForm from '../../components/AuthForm';
+
+export const metadata = { title: 'Login' };
+export default function Login() { return <div className="wrap"><AuthForm mode="login" /></div>; }

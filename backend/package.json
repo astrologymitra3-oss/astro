@@ -1,0 +1,1 @@
+{"name":"astrologymitra-backend","version":"1.0.0","private":true,"main":"src/index.js","scripts":{"start":"node src/index.js"},"engines":{"node":">=18"},"dependencies":{"astronomy-engine":"^2.1.19","bcryptjs":"^2.4.3","cors":"^2.8.5","express":"^4.21.1","jsonwebtoken":"^9.0.2","nodemailer":"^6.9.16","pg":"^8.13.1","puppeteer-core":"^23.6.0"}}
