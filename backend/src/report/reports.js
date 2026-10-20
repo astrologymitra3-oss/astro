@@ -30,6 +30,31 @@ function X(lang, tz = 5.5) {
     d: (d) => fmtD(d, tz), dt: (d) => fmtDT(d, tz),
   };
 }
+// Hindi rendering of computed yoga/dosha descriptions
+const YOGA_HI = { 'Gajakesari Yoga': 'गजकेसरी योग', 'Budhaditya Yoga': 'बुधादित्य योग', 'Chandra-Mangal Yoga': 'चन्द्र-मंगल योग', 'Durudhura Yoga': 'दुरुधरा योग', 'Sunapha Yoga': 'सुनफा योग', 'Anapha Yoga': 'अनफा योग', 'Adhi Yoga': 'अधि योग', 'Viparita Raja Yoga': 'विपरीत राज योग', 'Raja Yoga': 'राज योग', 'Dhana Yoga': 'धन योग', Ruchaka: 'रुचक', Bhadra: 'भद्र', Hamsa: 'हंस', Malavya: 'मालव्य', Shasha: 'शश', 'Yoga (Pancha Mahapurusha)': 'योग (पंच महापुरुष)', Exalted: 'उच्च', Own: 'स्वराशि', Moolatrikona: 'मूलत्रिकोण' };
+function hiText(x, s) {
+  if (!x.hi || !s) return s;
+  const P = '(Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Rahu|Ketu)';
+  const pl = (str) => str.replace(new RegExp(P, 'g'), (m) => D.PL_HI[m]);
+  const rules = [
+    [new RegExp(`^${P} and ${P} together in (\\w+)$`), (m, a, b, sg) => `${D.PL_HI[a]} और ${D.PL_HI[b]} ${D.SIGNS_HI[D.SIGNS.indexOf(sg)]} राशि में एक साथ`],
+    [/^Jupiter in a kendra from the Moon$/, () => 'गुरु चन्द्रमा से केन्द्र में'],
+    [new RegExp(`^${P} (\\w+) in house (\\d+)$`), (m, a, dg, h) => `${D.PL_HI[a]} ${YOGA_HI[dg] || dg} होकर ${h} भाव में`],
+    [/^(.+) 2nd and (.+) 12th from Moon$/, (m, a, b) => `${pl(a)} चन्द्रमा से द्वितीय और ${pl(b)} द्वादश भाव में`],
+    [/^(.+) 2nd from Moon$/, (m, a) => `${pl(a)} चन्द्रमा से द्वितीय भाव में`],
+    [/^(.+) 12th from Moon$/, (m, a) => `${pl(a)} चन्द्रमा से द्वादश भाव में`],
+    [/^(.+) in 6\/7\/8 from Moon$/, (m, a) => `${pl(a)} चन्द्रमा से 6/7/8 भाव में`],
+    [/^(\d+)(?:st|nd|rd|th) lord (\w+) in house (\d+)$/, (m, n, a, h) => `${n} भाव का स्वामी ${D.PL_HI[a]} ${h} भाव में`],
+    [/^(.+) \(kendra and trikona lords\) conjoined$/, (m, a) => `केन्द्र और त्रिकोण के स्वामी ${pl(a)} की युति`],
+    [new RegExp(`^${P} with ${P}$`), (m, a, b) => `${D.PL_HI[a]} के साथ ${D.PL_HI[b]}`],
+    [new RegExp(`^${P} in 9th house$`), (m, a) => `${D.PL_HI[a]} नवम भाव में`],
+    [/^9th lord (\w+) with a node$/, (m, a) => `नवमेश ${D.PL_HI[a]} राहु/केतु के साथ`],
+  ];
+  for (const [re, fn] of rules) if (re.test(s)) return s.replace(re, fn);
+  let out = s;
+  for (const [k, v] of Object.entries(YOGA_HI).sort((a, b) => b[0].length - a[0].length)) out = out.split(k).join(v);
+  return pl(out);
+}
 const nature = (c, p) => E.functionalNature(c.ascSign, p);
 const ownedStr = (x, c, p) => { const h = E.housesOwned(c.ascSign, p); return h.length ? h.map((n) => (x.hi ? `${n}` : ord(n))).join(' + ') + (x.hi ? ' भाव स्वामी' : ' lord') : '--'; };
 const stCls = (s) => (/Benefic|Yogakaraka|Exalted|Own|Moolatrikona/.test(s) ? 'ok' : /Malefic|Debilitated|Enemy/.test(s) ? 'bad' : 'mid');
@@ -152,7 +177,7 @@ S['vedic-kundli'] = {
       textPage(t('Planets in Your Chart'), t('What each planet does from its house'), [cards(x, c.planets.map((p) => `${x.pl(p.name)} — ${x.sign(p.sign)}, ${x.hs(p.house)}`), T.toArr(a.planets))]),
       textPage(t('Career & Finance'), t('The 10th house, its lord, and the karakas of profession'), [T.table([t('Signature'), t('Placement')], [[`${t('10th House')} — ${x.sign((s + 9) % 12)}`, `${t('Lord')} ${x.pl(l10)} — ${x.hs(c.P[l10].house)}`], [t('Atmakaraka'), `${x.pl(ak[0].name)} — ${x.sign(ak[0].sign)}`], [t('Amatyakaraka'), `${x.pl(ak[1].name)} — ${x.sign(ak[1].sign)}`], [`${t('2nd Lord')} / ${t('11th Lord')}`, `${x.pl(l2)} (${x.hs(c.P[l2].house)}) / ${x.pl(l11)} (${x.hs(c.P[l11].house)})`]]), sec(t('Profession Indicated'), a.career), sec(t('Wealth & Finance'), a.wealth)]),
       textPage(t('Marriage, Health & Education'), t('Relationships, wellbeing and learning'), [T.kv([[`${t('7th House')}`, `${x.sign((s + 6) % 12)} — ${t('Lord')} ${x.pl(l7)} ${x.hs(c.P[l7].house)}`], [t('Venus'), `${x.sign(c.P.Venus.sign)}, ${x.hs(c.P.Venus.house)}`], [t('Manglik'), yd.doshas.manglik.present ? t('Present') : t('Not Present')]]), sec(t('Marriage & Relationships'), a.marriage), sec(t('Health'), a.health), sec(t('Education'), a.education)]),
-      textPage(t('Yogas & Doshas'), t('Combinations that shape life'), [T.h3(t('Yogas Present')), T.table([t('Yoga'), t('Formation')], yd.yogas.length ? yd.yogas.map((y) => [y[0], y[1]]) : [[t('None major'), '--']]), T.h3(t('Doshas — Present and Absent')), doshaTable(x, yd.doshas), T.callout(t('What This Means'), a.yogas)]),
+      textPage(t('Yogas & Doshas'), t('Combinations that shape life'), [T.h3(t('Yogas Present')), T.table([t('Yoga'), t('Formation')], yd.yogas.length ? yd.yogas.map((y) => [hiText(x, y[0]), hiText(x, y[1])]) : [[t('None major'), '--']]), T.h3(t('Doshas — Present and Absent')), doshaTable(x, yd.doshas), T.callout(t('What This Means'), a.yogas)]),
       dashaPage(x, c, a.dasha, inp),
       textPage(t('Remedies & Lucky Factors'), t('Supporting elements for your life'), [T.h3(t('Auspicious Elements')), T.kv(luckyRows(x, c)), T.h3(t('Remedial Priority')), T.list(a.remedies), T.quote(a.quote)]),
     ];
@@ -164,7 +189,7 @@ function doshaTable(x, ds) {
   return T.table([t('Dosha'), t('Status'), t('Detail')], [
     [t('Manglik / Kuja'), st(ds.manglik.present), `${t('Mars')}: ${x.hs(ds.manglik.houseLagna)} ${t('from Lagna')}, ${x.hs(ds.manglik.houseMoon)} ${t('from Moon')}${ds.manglik.mitigated ? ' — ' + t('mitigated by dignity') : ''}`],
     [t('Kaal Sarp Dosha'), st(ds.kaalSarp.present), ds.kaalSarp.present ? `${x.pick([D.KAAL_SARP[ds.kaalSarp.type], D.KAAL_SARP_HI[ds.kaalSarp.type]])} — ${t('Rahu')} ${x.hs(ds.kaalSarp.rahuHouse)}` : t('Planets on both sides of the Rahu-Ketu axis')],
-    [t('Pitru Dosha'), st(ds.pitru.present), ds.pitru.reasons.join(', ') || '--'],
+    [t('Pitru Dosha'), st(ds.pitru.present), ds.pitru.reasons.map((r) => hiText(x, r)).join(', ') || '--'],
     [t('Grahan Dosha'), st(ds.grahan.present), t('Sun/Moon with Rahu or Ketu')],
     [t('Guru Chandal Dosha'), st(ds.guruChandal.present), t('Jupiter with Rahu or Ketu')],
     [t('Shrapit Dosha'), st(ds.shrapit.present), t('Saturn with Rahu')],
@@ -358,7 +383,7 @@ S['dosha-report'] = {
       textPage(t('Dosha Summary'), t('All major doshas checked in your chart'), [doshaTable(x, ds), T.callout(t('Summary'), a.summary)]),
       textPage(t('Manglik Dosha'), t('Mars and its placement'), [T.kv([[t('Mars position'), `${x.sign(c.P.Mars.sign)}, ${x.hs(c.P.Mars.house)}`], [t('Mars from Lagna'), x.hs(ds.manglik.houseLagna)], [t('Mars from Moon'), x.hs(ds.manglik.houseMoon)], [t('Mars from Venus'), x.hs(ds.manglik.houseVenus)], [t('Status'), st(ds.manglik.present)], [t('Mitigation by dignity'), ds.manglik.mitigated ? t('Yes') : t('No')]]), T.para(a.manglik)]),
       textPage(t('Kaal Sarp Dosha'), t('All planets between Rahu and Ketu?'), [T.kv([[t('Rahu'), `${x.sign(c.P.Rahu.sign)}, ${x.hs(c.P.Rahu.house)}`], [t('Ketu'), `${x.sign(c.P.Ketu.sign)}, ${x.hs(c.P.Ketu.house)}`], [t('Status'), st(ds.kaalSarp.present)], [t('Type (if present)'), ds.kaalSarp.present ? x.pick([D.KAAL_SARP[ds.kaalSarp.type], D.KAAL_SARP_HI[ds.kaalSarp.type]]) : '--']]), T.para(a.kaalsarp)]),
-      textPage(t('Pitru Dosha'), t('Ancestral karma in the chart'), [T.kv([[t('Status'), st(ds.pitru.present)], [t('Indicators'), ds.pitru.reasons.join(', ') || '--'], [t('Sun'), `${x.sign(c.P.Sun.sign)}, ${x.hs(c.P.Sun.house)}`], [t('9th Lord'), x.pl(E.lordOf(c.ascSign, 9))]]), T.para(a.pitru)]),
+      textPage(t('Pitru Dosha'), t('Ancestral karma in the chart'), [T.kv([[t('Status'), st(ds.pitru.present)], [t('Indicators'), ds.pitru.reasons.map((r) => hiText(x, r)).join(', ') || '--'], [t('Sun'), `${x.sign(c.P.Sun.sign)}, ${x.hs(c.P.Sun.house)}`], [t('9th Lord'), x.pl(E.lordOf(c.ascSign, 9))]]), T.para(a.pitru)]),
       textPage(t('Sade Sati & Dhaiya'), t("Saturn's transit over your Moon"), [T.kv([[t('Moon sign'), x.sign(c.moonSign)], [t('Saturn now in'), x.sign(ss.saturnSign)], [t('Sade Sati now'), ss.active ? t('Yes') : t('No')], [t('Dhaiya now'), ss.dhaiya ? t('Yes') : t('No')]]), T.table([t('Phase'), t('Sign'), t('From'), t('To')], ss.periods.map((p) => [t(p.phase), x.sign(p.sign), x.d(p.start), x.d(p.end)])), T.para(a.sadesati)]),
       textPage(t('Other Doshas'), t('Grahan, Guru Chandal, Shrapit and Kemadruma'), [T.h3(t('Current Transits')), T.table([t('Planet'), t('Sign'), t('From Moon')], tr.map((p) => [x.pl(p.name), x.sign(p.sign), x.hs(((p.sign - c.moonSign + 12) % 12) + 1)])), T.para(a.others)]),
       textPage(t('Dosha Remedies'), t('Remedial measures in priority order'), [T.list(a.remedies), T.quote(a.quote)]),
