@@ -11,7 +11,11 @@ const jobs = require('./jobs');
 
 const app = express();
 app.set('trust proxy', 1);
-const origins = (process.env.FRONTEND_URL || '').split(',').map((s) => s.trim()).filter(Boolean);
+// Accepts "domain.com", "https://domain.com/", quoted values, comma separated
+const origins = (process.env.FRONTEND_URL || '').split(',')
+  .map((s) => s.trim().replace(/^["']|["']$/g, '').replace(/\/+$/, ''))
+  .filter(Boolean)
+  .map((s) => (/^https?:\/\//.test(s) ? s : `https://${s}`));
 app.use(cors({ origin: origins.length ? origins : true }));
 app.use(express.json({ limit: '1mb' }));
 
