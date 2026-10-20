@@ -5,13 +5,13 @@ import OrderForm from '../../../components/OrderForm';
 import Banner from '../../../components/Banner';
 
 export const generateStaticParams = () => SERVICES.map((s) => ({ slug: s.slug }));
-export function generateMetadata({ params }) {
-  const s = findService(params.slug);
+export async function generateMetadata({ params }) {
+  const s = findService((await params).slug);
   return s ? { title: `${s.title} Report`, description: `${s.tagline}. ${s.short}` } : {};
 }
 
-export default function ServicePage({ params }) {
-  const s = findService(params.slug);
+export default async function ServicePage({ params }) {
+  const s = findService((await params).slug);
   if (!s) notFound();
   const others = SERVICES.filter((x) => x.slug !== s.slug).slice(0, 4);
   const birth = s.form === 'birth' || s.form === 'match';

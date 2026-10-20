@@ -46,10 +46,10 @@ const P = {
 };
 
 export const generateStaticParams = () => Object.keys(P).map((slug) => ({ slug }));
-export function generateMetadata({ params }) { return P[params.slug] ? { title: P[params.slug][0] } : {}; }
+export async function generateMetadata({ params }) { const p = P[(await params).slug]; return p ? { title: p[0] } : {}; }
 
-export default function Policy({ params }) {
-  const p = P[params.slug];
+export default async function Policy({ params }) {
+  const p = P[(await params).slug];
   if (!p) notFound();
   return (
     <>

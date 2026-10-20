@@ -1,4 +1,4 @@
-FROM node:20-slim
+FROM node:22-slim
 RUN apt-get update && apt-get install -y --no-install-recommends chromium fonts-noto-core fonts-noto-ui-core ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 ENV CHROME_PATH=/usr/bin/chromium NODE_ENV=production
