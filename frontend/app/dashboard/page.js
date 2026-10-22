@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ServiceIcon } from '../../components/Icons';
 import { api, getToken, setToken, downloadPdf, payWithRazorpay } from '../../lib/api';
 
 const left = (t) => {
@@ -42,7 +43,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <section className="pbanner" style={{ backgroundImage: 'url(/img/hero-diya.jpg)' }}><div className="wrap"><div className="crumb">Home / My Dashboard</div><h1>Namaste{me ? `, ${me.name}` : ''}</h1><p>{me ? `${me.email} · ${me.phone || ''}` : 'Your reports and orders'}</p></div></section>
+      <section className="pbanner"><div className="wrap"><div className="crumb">Home / My Dashboard</div><h1>Namaste{me ? `, ${me.name}` : ''}</h1><p>{me ? `${me.email} · ${me.phone || ''}` : 'Your reports and orders'}</p></div></section>
       <div className="wrap dash">
         <div className="dash-head"><h2 style={{ margin: 0 }}>My Reports</h2><div style={{ display: 'flex', gap: 10 }}><Link href="/services" className="btn btn-sm">Order a new report</Link><button className="btn btn-sm btn-line" onClick={logout}>Logout</button></div></div>
         {isNew && <div className="note">Thank you! Your order AM-{isNew} is confirmed. Pandit ji is preparing your report, it will appear here and on your email.</div>}
@@ -53,7 +54,7 @@ export default function Dashboard() {
           <div className="orders">
             {orders.map((o) => (
               <div className="ocard" key={o.id}>
-                <img src={`/img/${o.service}.jpg`} alt="" />
+                <span className="oc-ic"><ServiceIcon slug={o.service} size={44} /></span>
                 <div>
                   <h3>{o.name}</h3>
                   <div className="meta">Order AM-{o.id} · For {o.for} · {o.language === 'hi' ? 'Hindi' : 'English'} · ₹{o.amount} · {new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>

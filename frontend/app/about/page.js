@@ -6,14 +6,13 @@ export const metadata = { title: 'About Us', description: 'AstrologyMitra prepar
 export default function About() {
   return (
     <>
-      <Banner title="About Us" sub="ज्योतिष मित्र, New Delhi" img="/img/hero-temple.jpg" />
-      <div className="wrap split" style={{ padding: '50px 20px 20px' }}>
+      <Banner title="About Us" sub="ज्योतिष मित्र, New Delhi" />
+      <div className="prose" style={{ paddingBottom: 0 }}>
         <div>
           <h2>Why we started AstrologyMitra</h2>
           <p>Most families in India have someone they go to for kundli and muhurat. Many people today live far from that person, or get answers that are too short to understand. We started AstrologyMitra in New Delhi so that anyone can get a proper written report, in Hindi or English, prepared from their own birth details.</p>
           <p>We do not write sun-sign predictions. Every report starts with your chart, calculated for the minute and place of your birth.</p>
         </div>
-        <div className="photo" style={{ aspectRatio: '4/3' }}><img src="/img/mala.jpg" alt="Rudraksha mala" /></div>
       </div>
       <div className="prose" style={{ paddingTop: 10 }}>
         <h2>What we prepare</h2>

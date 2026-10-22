@@ -17,7 +17,7 @@ export default function Contact() {
   const wa = (c.whatsapp || '').replace(/\D/g, '');
   return (
     <>
-      <section className="pbanner" style={{ backgroundImage: 'url(/img/hero-aarti.jpg)' }}><div className="wrap"><div className="crumb">Home / Contact Us</div><h1>Contact Us</h1><p>Questions about a report or an order? Write to us.</p></div></section>
+      <section className="pbanner"><div className="wrap"><div className="crumb">Home / Contact Us</div><h1>Contact Us</h1><p>Questions about a report or an order? Write to us.</p></div></section>
       <div className="wrap cgrid">
         <div className="cinfo">
           <a href={`mailto:${c.email}`}><span className="ti"><Icon name="mail" /></span><span><small>Email</small>{c.email}</span></a>

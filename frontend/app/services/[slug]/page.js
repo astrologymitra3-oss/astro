@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { SERVICES, findService } from '../../../lib/services';
 import OrderForm from '../../../components/OrderForm';
 import Banner from '../../../components/Banner';
+import { ServiceIcon } from '../../../components/Icons';
 
 export const generateStaticParams = () => SERVICES.map((s) => ({ slug: s.slug }));
 export async function generateMetadata({ params }) {
@@ -17,13 +18,17 @@ export default async function ServicePage({ params }) {
   const birth = s.form === 'birth' || s.form === 'match';
   return (
     <>
-      <Banner title={s.title} sub={`${s.hindi} · ${s.tagline}`} crumb={<Link href="/services">Services</Link>} img={`/img/${s.slug}.jpg`} />
+      <Banner title={s.title} sub={`${s.hindi} · ${s.tagline}`} crumb={<Link href="/services">Services</Link>} icon={<ServiceIcon slug={s.slug} size={64} />} />
       <div className="wrap svc">
-        <div>
-          <div className="photo svc-photo"><img src={`/img/${s.slug}.jpg`} alt={s.title} /></div>
-          <p style={{ fontSize: 18 }}>{s.short}</p>
-          <a href="#order" className="btn jump">Fill the form</a>
-          <div className="box" style={{ marginTop: 20 }}><h3>About this report</h3><p style={{ margin: 0 }}>{s.about}</p></div>
+        <div className="svc-intro">
+          <p className="lead-p">{s.short}</p>
+          <div className="box qbox">
+            <h3>This report answers questions like</h3>
+            <ul className="qlist">{s.questions.map((q) => <li key={q}>{q}</li>)}</ul>
+          </div>
+        </div>
+        <div className="svc-rest">
+          <div className="box"><h3>About this report</h3><p style={{ margin: 0 }}>{s.about}</p></div>
           <div className="box"><h3>What you get from it</h3><ul className="ticks grid2">{s.benefits.map((b) => <li key={b}>{b}</li>)}</ul></div>
           <div className="box"><h3>Inside the report</h3><ul className="ticks grid2">{s.includes.map((b) => <li key={b}>{b}</li>)}</ul></div>
           <div className="box">

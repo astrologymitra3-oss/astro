@@ -6,7 +6,7 @@ export const metadata = { title: 'All Astrology Services', description: 'Vedic K
 export default function Services() {
   return (
     <>
-      <Banner title="All Services" sub="Ten reports, each prepared from your own birth details." img="/img/hero-diya.jpg" />
+      <Banner title="All Services" sub="Ten reports, each prepared from your own birth details. Pick the one that answers your question." />
       <section className="sec"><div className="wrap"><ServicesGrid /></div></section>
     </>
   );

@@ -53,7 +53,7 @@ export default async function Policy({ params }) {
   if (!p) notFound();
   return (
     <>
-      <section className="pbanner" style={{ backgroundImage: 'url(/img/temple.jpg)' }}><div className="wrap"><div className="crumb">Home / {p[0]}</div><h1>{p[0]}</h1><p>Last updated: {UPDATED}</p></div></section>
+      <section className="pbanner"><div className="wrap"><div className="crumb">Home / {p[0]}</div><h1>{p[0]}</h1><p>Last updated: {UPDATED}</p></div></section>
       <div className="prose">{p[1].map(([h, t]) => <div key={h}><h2>{h}</h2><p>{t}</p></div>)}</div>
     </>
   );
