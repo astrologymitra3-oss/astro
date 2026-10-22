@@ -7,7 +7,11 @@ const SERVICES = require('./services');
 const queue = [];
 let busy = false;
 const svcName = (slug) => (SERVICES.find((s) => s.slug === slug) || {}).name || slug;
-const SITE = () => process.env.FRONTEND_URL || 'https://astrologymitra.com';
+// Public website URL for email links: SITE_URL, else the first FRONTEND_URL entry
+const SITE = () => {
+  const u = (process.env.SITE_URL || (process.env.FRONTEND_URL || '').split(',')[0] || 'https://astrologymitra.com').trim().replace(/^["']|["']$/g, '').replace(/\/+$/, '');
+  return /^https?:\/\//.test(u) ? u : `https://${u}`;
+};
 
 function enqueue(id) {
   if (!queue.includes(id)) queue.push(id);
