@@ -112,3 +112,7 @@ export const SERVICES = [
 ];
 
 export const findService = (slug) => SERVICES.find((s) => s.slug === slug);
+
+// Service text in the chosen language. `alt` is the name in the other language (shown as a small label).
+import { SERVICES_HI } from './servicesHi';
+export const localize = (s, lang) => (lang === 'hi' ? { ...s, ...SERVICES_HI[s.slug], alt: s.title } : { ...s, alt: s.hindi });

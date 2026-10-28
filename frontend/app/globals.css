@@ -238,3 +238,42 @@ img,svg,video,table{max-width:100%}.wrap>*{min-width:0}input,select,textarea{min
 .svc-intro{grid-area:intro}.svc-rest{grid-area:rest}.svc>.oform{grid-area:form;order:0}
 @media (max-width:1024px){.svc{grid-template-areas:"intro" "form" "rest";grid-template-rows:auto}.svc>.oform{order:0;margin-bottom:20px}}
 @media (max-width:560px){.pbanner-in{flex-direction:column;align-items:flex-start}}
+
+/* ===== v4: language switch + a few real photos ===== */
+.lang-sw{display:inline-flex;border:1px solid var(--line);background:#fff;border-radius:20px;overflow:hidden;margin-left:8px}
+.lang-sw button{border:0;background:none;padding:5px 12px;font:600 14px 'Hind',sans-serif;color:var(--mar2);cursor:pointer}
+.lang-sw button.on{background:var(--mar);color:#fff}
+.hdr-r{display:none;align-items:center;gap:6px}.ls-mobile{display:none}
+@media (max-width:860px){.hdr-r{display:flex}.ls-mobile{display:inline-flex;margin:0}.ls-desk{display:none}.lang-sw button{padding:4px 10px;font-size:13px}}
+html[lang=hi] body{font-size:17px}
+/* hero photo: temple in an arch with the kundli badge */
+.hero-art{position:relative;display:flex;justify-content:center;padding:10px 0 30px}
+.arch{width:100%;max-width:380px;aspect-ratio:4/5;border-radius:190px 190px 10px 10px;overflow:hidden;border:6px solid #fff;box-shadow:0 18px 40px -22px rgba(90,40,10,.6)}
+.arch img{width:100%;height:100%;object-fit:cover}
+.chart-badge{position:absolute;left:0;bottom:0;width:190px;height:190px;border-radius:50%;background:#fffaf2;border:4px solid #fff;box-shadow:0 12px 30px -16px rgba(90,40,10,.6);display:flex;align-items:center;justify-content:center;padding:6px}
+.chart-badge .hero-chart{max-width:100%}
+@media (max-width:860px){.arch{max-width:280px}.chart-badge{width:130px;height:130px;left:6%}.hero-art{order:-1}}
+@media (max-width:560px){.arch{max-width:230px;border-radius:115px 115px 8px 8px}.chart-badge{width:110px;height:110px;left:2%}}
+/* tradition band with puja photo */
+.trad{position:relative;padding:70px 0;color:#f3e3cf;overflow:hidden}
+.trad-bg{position:absolute;inset:0;background:url(/img/diyas.jpg) center/cover}
+.trad-bg:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(40,15,8,.92),rgba(40,15,8,.75))}
+.trad-in{position:relative;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:40px;align-items:center}
+.trad h2{color:#fff}.trad .hi{color:#f2c48a;margin-bottom:6px}.trad p{color:#ead8c4;font-size:17px}
+.trad-photo{aspect-ratio:4/3;border:6px solid rgba(255,255,255,.85);overflow:hidden}.trad-photo img{width:100%;height:100%;object-fit:cover}
+.trad-pts{list-style:none;padding:0;margin:14px 0 0}.trad-pts li{padding:5px 0 5px 26px;position:relative;color:#fff}
+.trad-pts li:before{content:'✓';position:absolute;left:0;color:#f2c48a;font-weight:700}
+@media (max-width:860px){.trad-in{grid-template-columns:minmax(0,1fr)}.trad{padding:50px 0}}
+/* faq + about photos */
+.faq-photo{margin-top:20px;aspect-ratio:4/5;max-width:300px;border-radius:150px 150px 8px 8px;overflow:hidden;border:5px solid #fff;box-shadow:0 12px 30px -18px rgba(90,40,10,.6)}
+.faq-photo img{width:100%;height:100%;object-fit:cover}
+@media (max-width:1024px){.faq-photo{display:none}}
+.about-top{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);gap:30px;align-items:center}
+.about-top .photo{aspect-ratio:4/5;border-radius:140px 140px 8px 8px;overflow:hidden}
+@media (max-width:700px){.about-top{grid-template-columns:minmax(0,1fr)}.about-top .photo{max-width:260px}}
+/* banners over a darkened photo */
+.pbanner{background-color:var(--mar2);background-position:center;background-size:cover}
+.pbanner:before{display:block;content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(60,14,10,.92),rgba(60,14,10,.72))}
+.pbanner .wrap{position:relative}
+.cta-photo{background:linear-gradient(90deg,rgba(122,29,29,.95),rgba(122,29,29,.85)),url(/img/aarti.jpg) center/cover}
+@media (max-width:430px){.hdr .brand-t small{display:none}.hdr .brand-t b{font-size:19px}}
