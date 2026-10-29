@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import PolicyView from '../../../components/PolicyView';
 
 const UPDATED = 'October 2026';
-const C = 'astrologymitra3@gmail.com';
+const C = 'support@astrologymitra.com';
 const P = {
   'privacy-policy': ['Privacy Policy', [
     ['Information we collect', 'When you order a report we collect your name, email address, mobile number and the details needed to prepare the report, such as date, time and place of birth, gender, your question (for tarot) or your concern (for yantra). For Kundli Milan we collect the birth details of both persons. Payment is processed by Razorpay; we do not receive or store your card, UPI or bank details.'],

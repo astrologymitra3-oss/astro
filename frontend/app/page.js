@@ -99,7 +99,7 @@ export default function Home() {
       <section className="trad">
         <div className="trad-bg" />
         <div className="wrap trad-in">
-          <div className="trad-photo"><img src="/img/puja.jpg" alt="" loading="lazy" /></div>
+          <div className="trad-photo"><img src="/img/aarti-priests.jpg" alt="Ganga aarti" loading="lazy" /></div>
           <div>
             <div className="hi">॥ परंपरा और विश्वास ॥</div>
             <h2>{c.tradH}</h2>

@@ -12,7 +12,7 @@ const DEFAULT_SETTINGS = {
   razorpay_key_id: '', razorpay_key_secret: '', payment_bypass: '1',
   delivery_delay_minutes: '0',
   smtp_host: '', smtp_port: '465', smtp_user: '', smtp_pass: '', smtp_from: '',
-  admin_email: 'astrologymitra3@gmail.com', admin_whatsapp: '', contact_phone: '',
+  admin_email: 'astrologymitra3@gmail.com', contact_email: 'support@astrologymitra.com', admin_whatsapp: '', contact_phone: '',
   contact_address: 'New Delhi, Delhi, India',
 };
 const SECRET_KEYS = ['openai_key', 'razorpay_key_secret', 'smtp_pass'];

@@ -95,7 +95,7 @@ app.get('/api/config', wrap(async (_req, res) => {
   const s = await getSettings();
   const { rows } = await q('SELECT slug, price, active FROM services');
   res.json({
-    contact: { email: s.admin_email, phone: s.contact_phone, whatsapp: s.admin_whatsapp, address: s.contact_address },
+    contact: { email: s.contact_email || s.admin_email, phone: s.contact_phone, whatsapp: s.admin_whatsapp, address: s.contact_address },
     payment: { bypass: s.payment_bypass === '1', key: s.razorpay_key_id },
     services: SERVICES.map((sv) => { const r = rows.find((x) => x.slug === sv.slug) || {}; return { slug: sv.slug, name: sv.name, price: r.price ?? sv.price, active: r.active !== false }; }),
   });

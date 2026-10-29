@@ -174,7 +174,7 @@ function Settings() {
           <button type="button" className="btn btn-sm btn-line" onClick={() => test('smtp')}>Send test email</button>
         </div>
         <div className="ad-box"><h3>Notifications & Contact</h3>
-          {F('admin_email', 'Admin email (order notifications)', 'email')}{F('admin_whatsapp', 'Admin WhatsApp number', 'tel', '91XXXXXXXXXX')}{F('contact_phone', 'Public phone (optional)', 'tel')}{F('contact_address', 'Address')}
+          {F('admin_email', 'Admin email (order notifications)', 'email')}{F('contact_email', 'Support email shown on website', 'email', 'support@astrologymitra.com')}{F('admin_whatsapp', 'Admin WhatsApp number', 'tel', '91XXXXXXXXXX')}{F('contact_phone', 'Public phone (optional)', 'tel')}{F('contact_address', 'Address')}
         </div>
       </div>
       <button className="btn">Save Settings</button>

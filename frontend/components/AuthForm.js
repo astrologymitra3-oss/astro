@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, setToken } from '../lib/api';
 import { useT } from './Lang';
+import { useConfig } from './useConfig';
 
 export default function AuthForm({ mode }) {
   const router = useRouter();
   const t = useT();
+  const mail = useConfig().contact.email;
   const [f, setF] = useState({});
   const [st, setSt] = useState({});
   const u = (k) => (e) => setF({ ...f, [k]: e.target.value });
@@ -30,7 +32,7 @@ export default function AuthForm({ mode }) {
       <p className="center fine" style={{ marginTop: 16 }}>
         {reg ? <>{t('Already have an account?', 'पहले से अकाउंट है?')} <Link href="/login" style={{ color: 'var(--saf)' }}>{t('Login', 'लॉगिन')}</Link></> : <>{t('New here?', 'नए हैं?')} <Link href="/register" style={{ color: 'var(--saf)' }}>{t('Create an account', 'अकाउंट बनाएँ')}</Link></>}
       </p>
-      {!reg && <p className="center fine">{t('Forgot your password? Email us at astrologymitra3@gmail.com from your registered email.', 'पासवर्ड भूल गए? अपने रजिस्टर्ड ईमेल से astrologymitra3@gmail.com पर हमें लिखें।')}</p>}
+      {!reg && <p className="center fine">{t(`Forgot your password? Email us at ${mail} from your registered email.`, `पासवर्ड भूल गए? अपने रजिस्टर्ड ईमेल से ${mail} पर हमें लिखें।`)}</p>}
     </form>
   );
 }

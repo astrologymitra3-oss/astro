@@ -44,9 +44,9 @@ async function generate(id) {
   }
 }
 
-const mailShell = (body) => `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;border:1px solid #eee;border-radius:10px;overflow:hidden">
+const mailShell = (body, s = {}) => `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;border:1px solid #eee;border-radius:10px;overflow:hidden">
 <div style="background:#1b1440;padding:18px 24px;color:#fff;font-size:20px;font-weight:bold">Astrology<span style="color:#f39220">Mitra</span></div>
-<div style="padding:24px;color:#333;line-height:1.6">${body}</div><div style="background:#fff7ef;padding:12px 24px;font-size:12px;color:#888">AstrologyMitra · astrologymitra.com · astrologymitra3@gmail.com</div></div>`;
+<div style="padding:24px;color:#333;line-height:1.6">${body}</div><div style="background:#fff7ef;padding:12px 24px;font-size:12px;color:#888">AstrologyMitra · astrologymitra.com · ${s.contact_email || 'support@astrologymitra.com'}</div></div>`;
 
 async function sendReportEmail(o, s) {
   const name = (o.input.name || o.input.boy?.name || 'Customer').replace(/</g, '');
@@ -54,7 +54,7 @@ async function sendReportEmail(o, s) {
   return sendMail(s, {
     to: o.email,
     subject: `Your ${svcName(o.service)} report is ready - AstrologyMitra`,
-    html: mailShell(`<p>Namaste ${name} ji,</p><p>Your <b>${svcName(o.service)}</b> report (Order AM-${o.id}) has been prepared by Pandit ji and is attached to this email.</p><p>You can also download it any time from <a href="${link}">your dashboard</a>.</p><p>With blessings,<br/>Team AstrologyMitra</p>`),
+    html: mailShell(`<p>Namaste ${name} ji,</p><p>Your <b>${svcName(o.service)}</b> report (Order AM-${o.id}) has been prepared by Pandit ji and is attached to this email.</p><p>You can also download it any time from <a href="${link}">your dashboard</a>.</p><p>With blessings,<br/>Team AstrologyMitra</p>`, s),
     attachments: [{ filename: `AstrologyMitra-${o.service}-AM${o.id}.pdf`, content: o.pdf }],
   });
 }

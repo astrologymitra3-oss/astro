@@ -1,4 +1,4 @@
-export const SITE = { name: 'AstrologyMitra', domain: 'astrologymitra.com', url: 'https://astrologymitra.com', email: 'astrologymitra3@gmail.com', address: 'New Delhi, Delhi, India' };
+export const SITE = { name: 'AstrologyMitra', domain: 'astrologymitra.com', url: 'https://astrologymitra.com', email: 'support@astrologymitra.com', address: 'New Delhi, Delhi, India' };
 
 export const PROBLEMS = [
   ['career', 'Career growth & recognition'], ['wealth', 'Wealth & financial stability'], ['marriage', 'Marriage & relationship harmony'],
