@@ -51,6 +51,7 @@ async function buildReport(order, settings, ai) {
     ai = await askAI(settings, { lang, report: svc.name, ...spec });
   }
   const x = X(lang, Number(inp.tz ?? inp.boy?.tz ?? 5.5));
+  T.setReport(lang === 'hi' ? svc.hi : svc.name);
   const [name, lines] = coverLines(svc, inp);
   const body = T.cover({ title: lang === 'hi' ? svc.hi : svc.name, name, lines, hindi: lang === 'hi' }) + def.render(data, ai, x, inp).join('');
   const html = T.doc(lang, body);

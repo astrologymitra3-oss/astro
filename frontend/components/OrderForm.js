@@ -52,7 +52,8 @@ function Person({ p, set, birth = true, title }) {
       {birth && (
         <>
           <label>{t('Place of birth', 'जन्म स्थान')}<PlaceInput value={p} onChange={(v) => set({ ...p, ...v })} /></label>
-          <label className="small-l">{t('Time zone at birth', 'जन्म के समय का टाइम ज़ोन')}<select value={p.tz ?? 5.5} onChange={(e) => set({ ...p, tz: Number(e.target.value) })}>{TZ.map((v) => <option key={v} value={v}>{tzLabel(v)}</option>)}</select></label>
+          <label className="chk small-l"><input type="checkbox" checked={!!p.abroad} onChange={(e) => set({ ...p, abroad: e.target.checked, tz: 5.5 })} /> {t('Born outside India?', 'भारत के बाहर जन्म हुआ था?')}</label>
+          {p.abroad && <label className="small-l">{t('Time zone at birth', 'जन्म के समय का टाइम ज़ोन')}<select value={p.tz ?? 5.5} onChange={(e) => set({ ...p, tz: Number(e.target.value) })}>{TZ.map((v) => <option key={v} value={v}>{tzLabel(v)}</option>)}</select></label>}
         </>
       )}
     </fieldset>

@@ -6,7 +6,7 @@ const list = (arr) => `<ul class="ul">${toArr(arr).map((i) => `<li>${esc(i)}</li
 const cell = (c) => (c && typeof c === 'object' && 'html' in c ? c.html : esc(c));
 const table = (head, rows, cls = '') => `<table class="tb ${cls}">${head ? `<thead><tr>${head.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead>` : ''}<tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${cell(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
 const kv = (rows) => table(null, rows, 'kv');
-const squiggle = '<svg class="sq" width="44" height="8" viewBox="0 0 44 8"><path d="M1 5 C 8 -1, 14 9, 22 4 S 36 1, 43 5" fill="none" stroke="#9b2c3d" stroke-width="1.3"/></svg>';
+const squiggle = '<svg class="sq" width="70" height="8" viewBox="0 0 70 8"><path d="M0 4H28M42 4H70" stroke="#b8862b" stroke-width="1"/><path d="M35 0.5L38.5 4L35 7.5L31.5 4Z" fill="#b8862b"/></svg>';
 const h3 = (t) => `<h3>${esc(t)}${squiggle}</h3>`;
 const callout = (title, text) => `<div class="callout">${title ? `<h4>${esc(title)}</h4>` : ''}${para(text)}</div>`;
 const quote = (t) => (t ? `<div class="quote"><span class="qm">&ldquo;</span>${esc(t)}</div>` : '');
@@ -16,28 +16,37 @@ const grid3 = (items) => `<div class="g3">${items.map((i) => `<div>${i}</div>`).
 const box = (title, sub, extra = '', cls = '') => `<div class="card ${cls}"><div class="ct">${esc(title)}</div>${sub ? `<div class="cs">${esc(sub)}</div>` : ''}${extra}</div>`;
 
 let uid = 0;
-const page = (title, sub, body) => `<section class="page" data-uid="p${++uid}"><div class="vline"></div>
-  <header class="ph"><div class="pill-row"><span class="ln"></span><span class="pill">${esc(title)}</span><span class="ln"></span></div><div class="sub">${esc(sub || '')}</div></header>
+let REPORT = '';
+const setReport = (name) => { REPORT = name; };
+const EMBLEM = (size = 30) => `<svg width="${size}" height="${size}" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#7a1d1d"/><circle cx="32" cy="32" r="26.5" fill="none" stroke="#d9b56a" stroke-width="1.4"/><text x="32" y="43" text-anchor="middle" font-size="30" fill="#f3d58f" font-family="'Noto Sans Devanagari',sans-serif">ॐ</text></svg>`;
+const page = (title, sub, body) => `<section class="page" data-uid="p${++uid}"><div class="frame"></div><div class="wm"></div>
+  <div class="topbar"><span class="tb-l">${EMBLEM(22)}<b>Astrology<i>Mitra</i></b></span><span class="tb-r">${esc(REPORT)}</span></div>
+  <header class="ph"><h2 class="pt">${esc(title)}</h2>${squiggle.replace('class="sq"', 'class="sq big"')}<div class="sub">${esc(sub || '')}</div></header>
   <div class="content">${body}</div>
-  <footer class="pf"><span>AstrologyMitra &nbsp;|&nbsp; Vedic Astrology Report</span><span class="pn"></span><span>astrologymitra.com</span></footer></section>`;
+  <footer class="pf"><span>AstrologyMitra · ${esc(REPORT)}</span><span class="pn"></span><span>astrologymitra.com</span></footer></section>`;
 
 function cover({ title, name, lines = [], hindi }) {
-  const petals = Array.from({ length: 24 }, (_, i) => `<path transform="rotate(${i * 15} 150 150)" d="M150 12 C 165 30, 165 48, 150 60 C 135 48, 135 30, 150 12 Z" fill="none" stroke="#e8b46a" stroke-width="1.2"/>`).join('');
-  const dots = Array.from({ length: 48 }, (_, i) => { const a = (i * 7.5 * Math.PI) / 180; return `<circle cx="${150 + 82 * Math.cos(a)}" cy="${150 + 82 * Math.sin(a)}" r="1.8" fill="#e8b46a"/>`; }).join('');
-  return `<section class="page cover" data-uid="cover"><div class="vline"></div>
-  <div class="mandala"><svg width="300" height="300" viewBox="0 0 300 300">${petals}${dots}<circle cx="150" cy="150" r="74" fill="none" stroke="#e8b46a"/><circle cx="150" cy="150" r="70" fill="#ee7d14" stroke="#b9560a" stroke-width="2"/><circle cx="150" cy="150" r="60" fill="none" stroke="#f6b06a" stroke-width="0.8"/></svg><div class="om">ॐ</div></div>
+  const C = 150, petals = (n, r1, r2, w, op) => Array.from({ length: n }, (_, i) => `<path transform="rotate(${(i * 360) / n} ${C} ${C})" d="M${C} ${C - r2} C ${C + w} ${C - r2 + (r2 - r1) * 0.45}, ${C + w} ${C - r1 - 4}, ${C} ${C - r1} C ${C - w} ${C - r1 - 4}, ${C - w} ${C - r2 + (r2 - r1) * 0.45}, ${C} ${C - r2} Z" fill="none" stroke="#d9b56a" stroke-width="1.1" opacity="${op}"/>`).join('');
+  const dots = Array.from({ length: 72 }, (_, i) => { const a = (i * 5 * Math.PI) / 180; return `<circle cx="${C + 104 * Math.cos(a)}" cy="${C + 104 * Math.sin(a)}" r="1.3" fill="#d9b56a"/>`; }).join('');
+  const corner = (rot) => `<svg class="cn" style="transform:rotate(${rot}deg)" width="70" height="70" viewBox="0 0 70 70"><path d="M2 68V20Q2 2 20 2H68" fill="none" stroke="#d9b56a" stroke-width="1.5"/><path d="M10 68V26Q10 10 26 10H68" fill="none" stroke="#d9b56a" stroke-width="0.8"/><circle cx="22" cy="22" r="4" fill="#d9b56a"/></svg>`;
+  return `<section class="page cover" data-uid="cover">
+  <div class="cv-frame"></div><div class="cv-frame2"></div>
+  <div class="cn-wrap tl">${corner(0)}</div><div class="cn-wrap tr">${corner(90)}</div><div class="cn-wrap br">${corner(180)}</div><div class="cn-wrap bl">${corner(270)}</div>
   <div class="ganesh">॥ श्री गणेशाय नमः ॥</div>
-  <div class="band"><div class="bt">${esc(title)}</div><div class="bn">${esc(name)}</div>${lines.map((l) => `<div class="bl">${esc(l)}</div>`).join('')}</div>
-  <div class="gen">${hindi ? 'प्रस्तुतकर्ता' : 'prepared by'}</div>
-  <div class="brand">ASTROLOGY<span>MITRA</span></div><div class="brand2">astrologymitra.com</div>
-  <svg class="wave" width="120" height="10" viewBox="0 0 120 10"><path d="M2 6 C 25 0, 40 10, 60 5 S 100 0, 118 6" fill="none" stroke="#ee7d14" stroke-width="1.5"/></svg>
-  <div class="method">Lahiri (Chitrapaksha) Ayanamsa · High-precision Ephemeris · Parashari System</div></section>`;
+  <div class="mandala"><svg width="300" height="300" viewBox="0 0 300 300">${petals(16, 62, 132, 20, 0.95)}${petals(16, 62, 112, 13, 0.6).replace(/rotate\((\d+(?:\.\d+)?)/g, (m, d) => `rotate(${+d + 11.25}`)}${dots}<circle cx="150" cy="150" r="58" fill="none" stroke="#d9b56a" stroke-width="1.2"/></svg><div class="emb">${EMBLEM(104)}</div></div>
+  <div class="cv-title">${esc(title)}</div>
+  <svg class="cv-div" width="220" height="12" viewBox="0 0 220 12"><path d="M0 6H96M124 6H220" stroke="#d9b56a" stroke-width="1"/><path d="M110 0L116 6L110 12L104 6Z" fill="#d9b56a"/><circle cx="96" cy="6" r="2" fill="#d9b56a"/><circle cx="124" cy="6" r="2" fill="#d9b56a"/></svg>
+  <div class="cv-for">${hindi ? 'विशेष रूप से तैयार' : 'specially prepared for'}</div>
+  <div class="cv-name">${esc(name)}</div>
+  ${lines.map((l) => `<div class="cv-line">${esc(l)}</div>`).join('')}
+  <div class="cv-brand">${EMBLEM(40)}<div><b>Astrology<i>Mitra</i></b><span>ज्योतिष मित्र · astrologymitra.com</span></div></div>
+  <div class="method">Lahiri (Chitrapaksha) Ayanamsa · Parashari System · ${hindi ? 'पंडित जी द्वारा तैयार' : 'Prepared by Pandit ji'}</div></section>`;
 }
 
 // North Indian diamond chart. items: [{house, label}] ; ascSign 0-11
 const HP = { 1: [150, 66, 150, 136], 2: [75, 24, 75, 64], 3: [24, 75, 62, 75], 4: [72, 146, 136, 150], 5: [24, 225, 62, 225], 6: [75, 262, 75, 238], 7: [150, 224, 150, 166], 8: [225, 262, 225, 238], 9: [276, 225, 240, 225], 10: [228, 146, 164, 150], 11: [276, 75, 240, 75], 12: [225, 24, 225, 64] };
 function northChart(ascSign, items, title, sub) {
-  let s = `<svg viewBox="0 0 300 300" class="nc"><rect x="1" y="1" width="298" height="298" fill="#fff" stroke="#2d2a5a" stroke-width="1.6"/><path d="M1 1 L299 299 M299 1 L1 299 M150 1 L299 150 L150 299 L1 150 Z" fill="none" stroke="#2d2a5a" stroke-width="1.3"/>`;
+  let s = `<svg viewBox="0 0 300 300" class="nc"><rect x="1" y="1" width="298" height="298" fill="#fffdf7" stroke="#7a1d1d" stroke-width="1.8"/><path d="M1 1 L299 299 M299 1 L1 299 M150 1 L299 150 L150 299 L1 150 Z" fill="none" stroke="#7a1d1d" stroke-width="1.3"/>`;
   for (let h = 1; h <= 12; h++) {
     const [px, py, nx, ny] = HP[h];
     s += `<text x="${nx}" y="${ny + 4}" class="hn">${((ascSign + h - 1) % 12) + 1}</text>`;
@@ -65,63 +74,83 @@ function square(nums, title, sub) {
   return `<div class="yantra"><div class="yt">${esc(title)}</div><table class="ysq">${nums.map((r) => `<tr>${r.map((n) => `<td>${esc(n)}</td>`).join('')}</tr>`).join('')}</table>${sub ? `<div class="ys">${esc(sub)}</div>` : ''}</div>`;
 }
 
-const PATTERN = `url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="260" height="260" viewBox="0 0 260 260"><g fill="none" stroke="#efe5d6" stroke-width="1.4"><path d="M40 40 m-14 0 a14 14 0 1 0 28 0 a10 10 0 1 0 -20 0 a6 6 0 1 0 12 0"/><g transform="translate(190 70)"><circle r="6"/><path d="M0 -6 C 8 -22, 22 -8, 6 0 C 22 8, 8 22, 0 6 C -8 22, -22 8, -6 0 C -22 -8, -8 -22, 0 -6Z"/></g><path d="M80 190 c 10 -25 35 -25 40 0 c -10 10 -30 10 -40 0z"/><path d="M200 200 m-12 0 a12 12 0 1 0 24 0 a8 8 0 1 0 -16 0"/><path d="M120 110 l 18 -6 l -4 12 l 14 4 l -16 6"/></g></svg>')}")`;
+const WM = `url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><g fill="none" stroke="#b8862b" stroke-width="1">' + Array.from({ length: 24 }, (_, i) => `<path transform="rotate(${i * 15} 200 200)" d="M200 40 C 222 90, 222 130, 200 150 C 178 130, 178 90, 200 40 Z"/>`).join('') + '<circle cx="200" cy="200" r="50"/><circle cx="200" cy="200" r="165"/><circle cx="200" cy="200" r="175"/></g></svg>')}")`;
 
 const CSS = `
 @page{size:A4;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0}
-body{font-family:'Nunito Sans','Noto Sans Devanagari','Noto Sans',sans-serif;color:#3b3b4f;font-size:11.2px;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.hi body,.hi{font-family:'Noto Sans Devanagari','Nunito Sans',sans-serif}
-.page{width:210mm;height:296.8mm;position:relative;overflow:hidden;page-break-after:always;break-after:page;display:flex;flex-direction:column;padding:11mm 13mm 0 17mm;background:#fffdf9 ${PATTERN};background-size:260px 260px}
+:root{--mar:#7a1d1d;--mar2:#5c1414;--gold:#b8862b;--gold2:#d9b56a;--saf:#c75b12;--ink:#3a2a22;--mut:#7a6a5e;--line:#eadcc4;--cream:#fdf8ef}
+body{font-family:'Hind','Noto Sans Devanagari','Noto Sans',sans-serif;color:var(--ink);font-size:11.4px;line-height:1.6;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.hi body{font-size:12px}
+.page{width:210mm;height:296.8mm;position:relative;overflow:hidden;page-break-after:always;break-after:page;display:flex;flex-direction:column;padding:13mm 15mm 0 15mm;background:var(--cream)}
 .page:last-of-type{page-break-after:auto;break-after:auto}
-.vline{position:absolute;left:6mm;top:0;bottom:0;width:3px;background:#ee7d14}
-.ph{flex:0 0 auto;text-align:center;margin-bottom:6px}
-.pill-row{display:flex;align-items:center;gap:0}.ln{flex:1;height:1.5px;background:#ee7d14}
-.pill{border:2px solid #ee7d14;border-radius:30px;padding:7px 34px;font-family:'Comfortaa','Noto Sans Devanagari',sans-serif;font-weight:700;font-size:22px;color:#ee7d14;background:#fffdf9;white-space:nowrap}
-.hi .pill{font-family:'Noto Sans Devanagari',sans-serif}
-.sub{color:#777;font-size:11px;margin-top:9px}
-.content{flex:1 1 auto;min-height:0;overflow:hidden;padding-top:4px}
-.pf{flex:0 0 13mm;display:flex;align-items:center;justify-content:space-between;font-size:9.5px;color:#777}
-.pn{display:inline-flex;width:24px;height:24px;border:1px solid #ccc;border-radius:50%;align-items:center;justify-content:center;color:#2d2a5a;font-size:10px}
-h3{font-family:'Comfortaa','Noto Sans Devanagari',sans-serif;color:#2d2a5a;font-size:15px;margin:12px 0 7px;padding-bottom:5px;border-bottom:1px solid #ece4d8;position:relative}
-.hi h3{font-family:'Noto Sans Devanagari',sans-serif}
+.frame{position:absolute;inset:6mm;border:1.2px solid var(--gold);pointer-events:none}
+.frame:after{content:'';position:absolute;inset:1.4mm;border:0.6px solid var(--gold2)}
+.wm{position:absolute;left:50%;top:52%;width:150mm;height:150mm;transform:translate(-50%,-50%);background:${WM} center/contain no-repeat;opacity:.07;pointer-events:none}
+.topbar{position:relative;flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;border-bottom:0.8px solid var(--line);padding:1mm 1mm 2.4mm;margin-bottom:4mm}
+.tb-l{display:flex;align-items:center;gap:6px}.tb-l b{font:700 13px 'Cormorant Garamond','Noto Serif',serif;color:var(--mar);letter-spacing:.3px}.tb-l i{font-style:normal;color:var(--saf)}
+.tb-r{font-size:10px;color:var(--mut);letter-spacing:.5px;text-transform:uppercase}
+.ph{position:relative;flex:0 0 auto;text-align:center;margin-bottom:5px}
+.pt{margin:0;font:700 26px 'Cormorant Garamond','Noto Serif',serif;color:var(--mar);letter-spacing:.3px}
+.hi .pt{font-family:'Tiro Devanagari Hindi','Noto Serif Devanagari',serif;font-weight:400;font-size:24px}
+.sq.big{display:block;margin:3px auto 0}
+.sub{color:var(--mut);font-size:10.5px;margin-top:3px;font-style:italic}
+.content{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;padding:4px 1mm 0}
+.pf{position:relative;flex:0 0 19mm;display:flex;align-items:flex-start;justify-content:space-between;font-size:9.5px;color:var(--mut);padding:2.5mm 1mm 0;border-top:0.8px solid var(--line);margin-top:2mm}
+.pn{position:relative;isolation:isolate;display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center;color:var(--mar);font-size:10px;font-weight:700}
+.pn:before{content:'';position:absolute;inset:4px;transform:rotate(45deg);border:1px solid var(--gold);background:#fff;z-index:-1}
+h3{font:700 17px 'Cormorant Garamond','Noto Serif',serif;color:var(--mar);margin:12px 0 6px;padding-bottom:3px;border-bottom:0.8px solid var(--line)}
+.hi h3{font-family:'Tiro Devanagari Hindi','Noto Serif Devanagari',serif;font-weight:400;font-size:16px}
 h3 .sq{display:block;margin-top:2px}
-h4{margin:0 0 5px;color:#2d2a5a;font-size:12.5px}
+h4{margin:0 0 4px;color:var(--mar);font-size:12.5px}
 p{margin:0 0 7px;text-align:justify}
-.tb{width:100%;border-collapse:collapse;margin:4px 0 10px;font-size:10.4px;background:#fff}
-.tb th{background:#f39220;color:#fff;font-weight:600;text-align:left;padding:6px 8px}
-.tb td{padding:5px 8px;border-bottom:1px solid #f1e6e6;vertical-align:top}
-.tb tr:nth-child(even) td{background:#fde8ea}
-.tb.kv td:first-child{color:#444;width:40%}.tb.kv td:last-child{color:#666}
-.tb .ok{color:#2e8b57;font-weight:700}.tb .bad{color:#c9442b;font-weight:700}.tb .mid{color:#d98200;font-weight:700}
-.callout{background:#fdeef0;border-left:6px solid #ee7d14;padding:11px 15px;margin:10px 0}
-.callout h4{color:#b9560a}
-.quote{background:#f6f1ec;border-left:6px solid #ee7d14;padding:13px 18px 13px 40px;margin:12px 0;color:#ee7d14;font-style:italic;font-size:13.5px;font-family:'Poppins','Noto Sans Devanagari',sans-serif;position:relative}
-.quote .qm{position:absolute;left:14px;top:6px;font-size:30px;font-weight:700}
-.ul{margin:4px 0 8px;padding-left:18px}.ul li{margin-bottom:4px}
-.tags{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 10px}.tag{padding:5px 14px;border-radius:20px;font-size:10px}
-.tag.g{background:#e3f1e9;color:#2e7d50}.tag.r{background:#fde4e1;color:#c9442b}.tag.o{border:1px solid #ee7d14;color:#2d2a5a;background:#fff}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.card{border:1px solid #ece4d8;border-radius:8px;padding:9px 11px;background:#fff}.ct{font-weight:700;color:#2d2a5a;font-size:12px}.cs{color:#888;font-size:10px}
-.card .st{font-size:10px;margin-top:2px}.st.ok{color:#2e8b57}.st.bad{color:#c9442b}.st.mid{color:#2c6fb4}
-.chartbox{text-align:center}.nc{width:100%;max-width:285px}.nc .hn{font-size:10px;fill:#ee7d14;text-anchor:middle}.nc .pl{font-size:10.5px;fill:#2d2a5a;text-anchor:middle;font-weight:600}
-.cht{color:#9b2c3d;font-weight:700;font-size:11.5px;margin-top:2px}.chs{color:#888;font-size:9.5px}
-.bars{width:100%}.bars .bv{font-size:11px;text-anchor:middle;fill:#2d2a5a}.bars .bl{font-size:10px;text-anchor:middle;fill:#666}.bars .bs{font-size:9px;text-anchor:middle;fill:#9b2c3d}
-.yantra{text-align:center;margin:6px auto 12px}.yt{font-weight:700;color:#9b2c3d;margin-bottom:6px;font-size:13px}
-.ysq{margin:0 auto;border-collapse:collapse;border:3px double #ee7d14;background:#fff8ef}.ysq td{width:62px;height:56px;text-align:center;font-size:21px;font-weight:700;color:#2d2a5a;border:1.5px solid #ee7d14}
-.ys{font-size:10px;color:#888;margin-top:5px}
-.tcard{border:2px solid #ee7d14;border-radius:10px;background:linear-gradient(#2d2a5a,#1b1640);color:#f7d9a8;text-align:center;padding:10px 6px;height:150px;display:flex;flex-direction:column;justify-content:center;align-items:center}
-.tcard .tn{font-size:11.5px;font-weight:700;margin-top:6px}.tcard .tr{font-size:9px;color:#f39220;margin-top:3px}.tcard .ts{font-size:30px}
-.tcard.rev .ts{transform:rotate(180deg)}
+.tb{width:100%;border-collapse:collapse;margin:4px 0 10px;font-size:10.5px;background:#fff;border:0.8px solid var(--line)}
+.tb th{background:var(--mar);color:#f7e6c2;font-weight:600;text-align:left;padding:6px 8px;border-bottom:2px solid var(--gold)}
+.tb td{padding:5px 8px;border-bottom:0.6px solid #f1e6d3;vertical-align:top}
+.tb tr:nth-child(even) td{background:#fbf3e4}
+.tb.kv td:first-child{color:var(--mar);font-weight:500;width:40%}.tb.kv td:last-child{color:var(--ink)}
+.tb .ok{color:#2f7a4a;font-weight:700}.tb .bad{color:#b3261e;font-weight:700}.tb .mid{color:#b06a10;font-weight:700}
+.callout{background:#fff;border:0.8px solid var(--line);border-left:4px solid var(--gold);padding:10px 14px;margin:10px 0}
+.callout h4{color:var(--mar);font-family:'Cormorant Garamond','Noto Serif',serif;font-size:14px}
+.quote{background:var(--mar);color:#f7e6c2;padding:14px 20px 14px 46px;margin:14px 0;font:italic 600 15px 'Cormorant Garamond','Noto Serif',serif;position:relative;border-left:4px solid var(--gold)}
+.hi .quote{font-family:'Tiro Devanagari Hindi','Noto Serif Devanagari',serif;font-style:normal;font-weight:400;font-size:14px}
+.quote .qm{position:absolute;left:14px;top:4px;font-size:34px;color:var(--gold2)}
+.ul{margin:4px 0 8px;padding-left:18px}.ul li{margin-bottom:4px}.ul li::marker{color:var(--gold)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.tag{padding:4px 12px;border-radius:3px;font-size:10px}
+.tag.g{background:#eef5ee;color:#2f7a4a;border:0.6px solid #cfe3d3}.tag.r{background:#fbecea;color:#b3261e;border:0.6px solid #f0cdc8}.tag.o{border:0.6px solid var(--gold);color:var(--mar);background:#fff}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.card{border:0.8px solid var(--line);border-top:2px solid var(--gold);padding:8px 10px;background:#fff}.ct{font-weight:700;color:var(--mar);font-size:12px}.cs{color:var(--mut);font-size:10px}
+.card .st{font-size:10px;margin-top:2px}.st.ok{color:#2f7a4a}.st.bad{color:#b3261e}.st.mid{color:#1f5f9a}
+.chartbox{text-align:center}.nc{width:100%;max-width:285px}.nc .hn{font-size:10px;fill:var(--saf);text-anchor:middle;font-weight:600}.nc .pl{font-size:10.5px;fill:var(--mar);text-anchor:middle;font-weight:700}
+.cht{color:var(--mar);font-weight:700;font-size:11.5px;margin-top:2px;letter-spacing:.4px}.chs{color:var(--mut);font-size:9.5px}
+.bars{width:100%}.bars .bv{font-size:11px;text-anchor:middle;fill:var(--mar)}.bars .bl{font-size:10px;text-anchor:middle;fill:var(--mut)}.bars .bs{font-size:9px;text-anchor:middle;fill:var(--saf)}
+.yantra{text-align:center;margin:6px auto 12px}.yt{font-weight:700;color:var(--mar);margin-bottom:6px;font-size:13px}
+.ysq{margin:0 auto;border-collapse:collapse;border:3px double var(--gold);background:#fffaf0}.ysq td{width:62px;height:56px;text-align:center;font-size:21px;font-weight:700;color:var(--mar);border:1.5px solid var(--gold)}
+.ys{font-size:10px;color:var(--mut);margin-top:5px}
+.tcard{border:2px solid var(--gold);border-radius:8px;background:linear-gradient(#6d1919,#3e0d0d);color:#f3d58f;text-align:center;padding:10px 6px;height:150px;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.tcard .tn{font-size:11.5px;font-weight:700;margin-top:6px}.tcard .tr{font-size:9px;color:var(--gold2);margin-top:3px}.tcard .ts{font-size:30px}
 .row{display:flex;gap:14px;align-items:flex-start}.row>.side{flex:0 0 120px}.row>.main{flex:1}
-.score{font-size:42px;font-weight:800;color:#ee7d14;text-align:center;font-family:'Comfortaa',sans-serif}.scs{text-align:center;color:#666;margin-bottom:8px}
-.cover{padding:0;display:block;text-align:center}
-.cover .mandala{position:relative;width:300px;height:300px;margin:120px auto 0}.cover .om{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:76px;color:#fff;font-family:'Noto Sans Devanagari',sans-serif;padding-bottom:10px}
-.ganesh{color:#ee7d14;font-size:26px;margin:26px 0 28px;font-family:'Noto Sans Devanagari',sans-serif}
-.band{background:#ee7d14;color:#fff;padding:26px 20px 24px}.bt{font-family:'Comfortaa','Noto Sans Devanagari',sans-serif;font-size:29px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
-.bn{font-size:23px;margin-top:8px;text-transform:uppercase}.bl{font-size:12.5px;opacity:.85;margin-top:6px}
-.gen{margin-top:70px;color:#666;font-size:12px}.brand{font-family:'Comfortaa',sans-serif;font-size:36px;font-weight:700;color:#2d2a5a;letter-spacing:1px;margin-top:6px}.brand span{color:#ee7d14}
-.brand2{color:#ee7d14;letter-spacing:4px;font-size:12px;margin-top:2px}.wave{margin-top:14px}.method{position:absolute;bottom:22px;left:0;right:0;font-size:10px;color:#777}
-.small{font-size:9.6px;color:#888}.center{text-align:center}
+.score{font:700 44px 'Cormorant Garamond','Noto Serif',serif;color:var(--mar);text-align:center}.scs{text-align:center;color:var(--mut);margin-bottom:8px}
+.band{background:var(--mar);color:#f7e6c2;padding:14px 20px;border-left:4px solid var(--gold)}
+.band .bt{font:700 24px 'Cormorant Garamond','Noto Serif',serif;color:#f3d58f}.band .bl{font-size:11px;opacity:.9;margin-top:3px}
+.small{font-size:9.6px;color:var(--mut)}.center{text-align:center}
+/* cover */
+.cover{display:block;padding:0;text-align:center;background:radial-gradient(ellipse at 50% 35%,#7e2020 0%,#5c1414 45%,#3a0c0c 100%);color:#f7e6c2}
+.cv-frame{position:absolute;inset:9mm;border:1.4px solid #d9b56a}.cv-frame2{position:absolute;inset:11mm;border:0.6px solid rgba(217,181,106,.6)}
+.cn-wrap{position:absolute;width:70px;height:70px}.cn-wrap.tl{left:7mm;top:7mm}.cn-wrap.tr{right:7mm;top:7mm}.cn-wrap.br{right:7mm;bottom:7mm}.cn-wrap.bl{left:7mm;bottom:7mm}
+.cover .ganesh{position:relative;padding-top:30mm;font:400 20px 'Tiro Devanagari Hindi','Noto Serif Devanagari',serif;color:#e7c77e;letter-spacing:.5px}
+.cover .mandala{position:relative;width:300px;height:300px;margin:12mm auto 0}
+.cover .emb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.cv-title{margin-top:10mm;font:700 25px 'Cormorant Garamond','Noto Serif',serif;letter-spacing:4px;text-transform:uppercase;color:#f3d58f}
+.hi .cv-title{font-family:'Tiro Devanagari Hindi','Noto Serif Devanagari',serif;letter-spacing:1px;font-weight:400;font-size:28px}
+.cv-div{display:block;margin:10px auto 8px}
+.cv-for{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#d9b56a;margin-top:6px}
+.hi .cv-for{letter-spacing:1px;text-transform:none;font-size:13px}
+.cv-name{font:italic 600 46px 'Cormorant Garamond','Noto Serif',serif;color:#fff6e3;margin:4px 0 6px;letter-spacing:.5px}
+.cv-line{font-size:13px;color:#ead2a6;margin-top:3px;letter-spacing:.5px}
+.cv-brand{position:absolute;left:0;right:0;bottom:30mm;display:flex;align-items:center;justify-content:center;gap:10px;text-align:left}
+.cv-brand b{display:block;font:700 26px 'Cormorant Garamond','Noto Serif',serif;color:#fff6e3}.cv-brand i{font-style:normal;color:#f0a35a}
+.cv-brand span{font-size:10.5px;color:#d9b56a;letter-spacing:1px}
+.cover .method{position:absolute;bottom:17mm;left:0;right:0;font-size:9.5px;color:#c9ab7a;letter-spacing:.5px}
 `;
 
 // Moves overflowing blocks to continuation pages, then numbers pages
@@ -129,8 +158,8 @@ const PAGINATE = `function __paginate(){let n=0;for(let g=0;g<400;g++){const pag
 
 function doc(lang, body) {
   return `<!doctype html><html lang="${lang}" class="${lang === 'hi' ? 'hi' : ''}"><head><meta charset="utf-8">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=Nunito+Sans:wght@400;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&family=Poppins:ital,wght@1,400&display=block" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Hind:wght@400;500;600;700&family=Tiro+Devanagari+Hindi&family=Noto+Sans+Devanagari:wght@400;600;700&display=block" rel="stylesheet">
 <style>${CSS}</style><script>${PAGINATE}</script></head><body>${body}</body></html>`;
 }
 
-module.exports = { esc, para, list, table, kv, h3, callout, quote, tags, grid2, grid3, box, page, cover, northChart, bars, square, doc, toArr };
+module.exports = { setReport, esc, para, list, table, kv, h3, callout, quote, tags, grid2, grid3, box, page, cover, northChart, bars, square, doc, toArr };

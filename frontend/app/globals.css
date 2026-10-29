@@ -293,3 +293,5 @@ html[lang=hi] .scard h3{font-size:24px}
 .pb-ic{background:#fff3f0}.in-ic{color:#b3261e;background:#fde8e4}
 .oc-ic{background:#fde8e4}
 @media (max-width:560px){.scard h3{font-size:22px}.scard.feat h3{font-size:24px}.scard-ic{width:72px;height:72px;flex-basis:72px}.scard-ic .sicon{width:52px;height:52px}}
+
+.oform .chk{display:flex;gap:8px;align-items:center;font-weight:500}.oform .chk input{width:auto;margin:0}
