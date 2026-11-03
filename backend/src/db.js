@@ -10,7 +10,7 @@ const pool = new Pool({
 const DEFAULT_SETTINGS = {
   openai_key: '', openai_model: 'gpt-4o-mini',
   razorpay_key_id: '', razorpay_key_secret: '', payment_bypass: '1',
-  delivery_delay_minutes: '0',
+  delivery_delay_minutes: '0', login_otp: '0',
   smtp_host: '', smtp_port: '465', smtp_user: '', smtp_pass: '', smtp_from: '',
   admin_email: 'astrologymitra3@gmail.com', contact_email: 'support@astrologymitra.com', admin_whatsapp: '', contact_phone: '',
   contact_address: 'New Delhi, Delhi, India',

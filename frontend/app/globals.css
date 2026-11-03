@@ -282,16 +282,10 @@ html[lang=hi] body{font-size:17px}
 .sicon{color:#b3261e}
 .scard-ic{width:84px;height:84px;flex:0 0 84px;background:#fde8e4;border:2px solid #f3c2b8}
 .scard-ic .sicon{width:60px;height:60px}
-.scard-top .hindi{font-size:17px;font-weight:600;color:var(--mar)}
-.scard h3{font-size:25px;line-height:1.25}
-html[lang=hi] .scard h3{font-size:24px}
-.scard-tag{font-size:16.5px}
 .scard.feat .scard-ic{width:104px;height:104px;flex-basis:104px}.scard.feat .scard-ic .sicon{width:74px;height:74px}
-.scard.feat h3{font-size:30px}
 .need-ic{flex:0 0 62px;width:62px;height:62px;background:#fde8e4;border-color:#f3c2b8}.need-ic .sicon{width:46px;height:46px}
-.need b{font-size:19px}
 .pb-ic{background:#fff3f0}.in-ic{color:#b3261e;background:#fde8e4}
 .oc-ic{background:#fde8e4}
-@media (max-width:560px){.scard h3{font-size:22px}.scard.feat h3{font-size:24px}.scard-ic{width:72px;height:72px;flex-basis:72px}.scard-ic .sicon{width:52px;height:52px}}
+@media (max-width:560px){.scard-ic{width:72px;height:72px;flex-basis:72px}.scard-ic .sicon{width:52px;height:52px}}
 
 .oform .chk{display:flex;gap:8px;align-items:center;font-weight:500}.oform .chk input{width:auto;margin:0}

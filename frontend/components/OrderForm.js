@@ -72,7 +72,7 @@ export default function OrderForm({ service }) {
   const [p, setP] = useState({ tz: 5.5 });
   const [boy, setBoy] = useState({ tz: 5.5, gender: 'Male' });
   const [girl, setGirl] = useState({ tz: 5.5, gender: 'Female' });
-  const [acc, setAcc] = useState({ mode: 'register' });
+  const [acc, setAcc] = useState({});
   const [authed, setAuthed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -83,7 +83,7 @@ export default function OrderForm({ service }) {
     setErr(''); setBusy(true);
     try {
       const input = service.form === 'match' ? { boy, girl } : p;
-      const r = await api('/api/orders', { method: 'POST', body: { service: service.slug, language: lang, input, account: authed ? undefined : acc } });
+      const r = await api('/api/orders', { method: 'POST', body: { service: service.slug, language: lang, input, account: authed ? undefined : { ...acc, name: service.form === 'match' ? boy.name : p.name } } });
       if (r.token) { setToken(r.token); setAuthed(true); }
       if (!r.paid) {
         const me = await api('/api/auth/me').catch(() => ({}));
@@ -124,13 +124,9 @@ export default function OrderForm({ service }) {
       )}
       {!authed && (
         <fieldset className="fs acc">
-          <legend>{t('Your account', 'आपका अकाउंट')} <small>{t('(to access your reports)', '(रिपोर्ट देखने के लिए)')}</small></legend>
-          <div className="seg small">
-            <button type="button" className={acc.mode === 'register' ? 'on' : ''} onClick={() => setAcc({ ...acc, mode: 'register' })}>{t('New customer', 'नया ग्राहक')}</button>
-            <button type="button" className={acc.mode === 'login' ? 'on' : ''} onClick={() => setAcc({ ...acc, mode: 'login' })}>{t('I have an account', 'मेरा अकाउंट है')}</button>
-          </div>
-          {acc.mode === 'register' && <div className="row2"><label>{t('Your name', 'आपका नाम')}<input required value={acc.name || ''} onChange={ua('name')} /></label><label>{t('Mobile (WhatsApp)', 'मोबाइल (WhatsApp)')}<input required type="tel" pattern="\+?[0-9\s-]{10,15}" value={acc.phone || ''} onChange={ua('phone')} placeholder={t('10-digit number', '10 अंकों का नंबर')} /></label></div>}
-          <div className="row2"><label>{t('Email', 'ईमेल')}<input required type="email" value={acc.email || ''} onChange={ua('email')} /></label><label>{t('Password', 'पासवर्ड')}<input required type="password" minLength={6} value={acc.password || ''} onChange={ua('password')} placeholder={t('Min 6 characters', 'कम से कम 6 अक्षर')} /></label></div>
+          <legend>{t('Your contact details', 'आपकी जानकारी')}</legend>
+          <div className="row2"><label>{t('Mobile (WhatsApp)', 'मोबाइल (WhatsApp)')}<input required type="tel" pattern="\+?[0-9\s-]{10,15}" value={acc.phone || ''} onChange={ua('phone')} placeholder={t('10-digit number', '10 अंकों का नंबर')} /></label><label>{t('Email', 'ईमेल')}<input required type="email" value={acc.email || ''} onChange={ua('email')} placeholder="name@gmail.com" /></label></div>
+          <p className="fine" style={{ textAlign: 'left', marginTop: -4, marginBottom: 10 }}>{t('Your report is sent to this email. To see it again later, just log in with this email. No password needed.', 'रिपोर्ट इसी ईमेल पर भेजी जाएगी। बाद में दोबारा देखने के लिए बस इसी ईमेल से लॉगिन करें, पासवर्ड की ज़रूरत नहीं।')}</p>
         </fieldset>
       )}
       {err && <div className="alert">{err}</div>}

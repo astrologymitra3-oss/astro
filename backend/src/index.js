@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
-const bcrypt = require('bcryptjs');
 const db = require('./db');
 const { q, getSettings, setSettings, SECRET_KEYS } = db;
 const SERVICES = require('./services');
@@ -116,26 +115,49 @@ app.post('/api/contact', wrap(async (req, res) => {
   res.json({ ok: true });
 }));
 
-// ---------- customer auth ----------
+// ---------- customer auth (passwordless: email only, optional email OTP) ----------
 const userOut = (u) => ({ id: u.id, name: u.name, email: u.email, phone: u.phone });
-async function register({ name, email, phone, password }) {
-  email = str(email, 120).toLowerCase();
-  if (!str(name)) throw fail(400, 'Please enter your name');
+const normEmail = (e) => str(e, 120).toLowerCase();
+// Find the account for this email, or create it. Fills in name/phone if they were missing.
+async function upsertUser({ name, email, phone }) {
+  email = normEmail(email);
   if (!emailOk(email)) throw fail(400, 'Please enter a valid email');
-  if (!/^\+?\d{10,13}$/.test(str(phone, 20).replace(/[\s-]/g, ''))) throw fail(400, 'Please enter a valid mobile number');
-  if (String(password || '').length < 6) throw fail(400, 'Password must be at least 6 characters');
-  const ex = await q('SELECT id FROM users WHERE email=$1', [email]);
-  if (ex.rows.length) throw fail(409, 'An account with this email already exists. Please login.');
-  const { rows: [u] } = await q('INSERT INTO users(name,email,phone,password_hash) VALUES($1,$2,$3,$4) RETURNING *', [str(name, 80), email, str(phone, 20).replace(/[\s-]/g, ''), await bcrypt.hash(password, 10)]);
+  const ph = str(phone, 20).replace(/[\s-]/g, '');
+  if (ph && !/^\+?\d{10,13}$/.test(ph)) throw fail(400, 'Please enter a valid mobile number');
+  const { rows: [ex] } = await q('SELECT * FROM users WHERE email=$1', [email]);
+  if (ex) {
+    if ((!ex.name && str(name)) || (!ex.phone && ph)) {
+      const { rows: [u] } = await q('UPDATE users SET name=COALESCE(NULLIF(name,\'\'),$2), phone=COALESCE(NULLIF(phone,\'\'),$3) WHERE id=$1 RETURNING *', [ex.id, str(name, 80), ph]);
+      return u;
+    }
+    return ex;
+  }
+  const { rows: [u] } = await q('INSERT INTO users(name,email,phone,password_hash) VALUES($1,$2,$3,$4) RETURNING *', [str(name, 80), email, ph, '-']);
   return u;
 }
-async function login({ email, password }) {
-  const { rows: [u] } = await q('SELECT * FROM users WHERE email=$1', [str(email, 120).toLowerCase()]);
-  if (!u || !(await bcrypt.compare(String(password || ''), u.password_hash))) throw fail(401, 'Invalid email or password');
-  return u;
-}
-app.post('/api/auth/register', wrap(async (req, res) => { const u = await register(req.body || {}); res.json({ token: sign({ uid: u.id }), user: userOut(u) }); }));
-app.post('/api/auth/login', wrap(async (req, res) => { const u = await login(req.body || {}); res.json({ token: sign({ uid: u.id }), user: userOut(u) }); }));
+const otps = new Map(); // email -> { code, exp, tries }
+app.post('/api/auth/login', wrap(async (req, res) => {
+  const email = normEmail(req.body?.email);
+  if (!emailOk(email)) throw fail(400, 'Please enter a valid email');
+  const { rows: [u] } = await q('SELECT * FROM users WHERE email=$1', [email]);
+  if (!u) throw fail(404, 'No reports found for this email. Please use the email you used while ordering.');
+  const s = await getSettings();
+  if (s.login_otp === '1') {
+    const code = str(req.body?.code, 6);
+    if (!code) {
+      const c = String(crypto.randomInt(100000, 1000000));
+      otps.set(email, { code: c, exp: Date.now() + 10 * 60000, tries: 0 });
+      const sent = await sendMail(s, { to: email, subject: `${c} is your AstrologyMitra login code`, html: `<p>Your login code is <b style="font-size:20px">${c}</b>. It is valid for 10 minutes.</p>` }).catch(() => false);
+      if (!sent) throw fail(503, 'Could not send the login code right now. Please try again later.');
+      return res.json({ otp: true });
+    }
+    const o = otps.get(email);
+    if (!o || o.exp < Date.now() || ++o.tries > 5) { otps.delete(email); throw fail(400, 'The code has expired. Please request a new one.'); }
+    if (o.code !== code) throw fail(400, 'Incorrect code. Please check your email.');
+    otps.delete(email);
+  }
+  res.json({ token: sign({ uid: u.id }), user: userOut(u) });
+}));
 app.get('/api/auth/me', requireUser, wrap(async (req, res) => {
   const { rows: [u] } = await q('SELECT * FROM users WHERE id=$1', [req.user.uid]);
   if (!u) throw fail(401, 'Please login again');
@@ -152,8 +174,9 @@ app.post('/api/orders', optionalUser, wrap(async (req, res) => {
   const clean = await cleanInput(s, input);
   let uid = req.user?.uid, token = null;
   if (!uid) {
-    if (!account) throw fail(401, 'Please login or create an account');
-    const u = account.mode === 'login' ? await login(account) : await register(account);
+    if (!account?.email) throw fail(400, 'Please enter your email');
+    if (!str(account.phone)) throw fail(400, 'Please enter your mobile number');
+    const u = await upsertUser(account);
     uid = u.id; token = sign({ uid });
   }
   const amount = sr?.price ?? s.price;

@@ -6,33 +6,33 @@ import { api, setToken } from '../lib/api';
 import { useT } from './Lang';
 import { useConfig } from './useConfig';
 
-export default function AuthForm({ mode }) {
+// Passwordless login: email only. If Admin turns on OTP, a 6-digit code is emailed first.
+export default function AuthForm() {
   const router = useRouter();
   const t = useT();
   const mail = useConfig().contact.email;
-  const [f, setF] = useState({});
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [otp, setOtp] = useState(false);
   const [st, setSt] = useState({});
-  const u = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const go = async (e) => {
     e.preventDefault(); setSt({ busy: true });
-    try { const r = await api(`/api/auth/${mode}`, { method: 'POST', body: f, auth: null }); setToken(r.token); router.push('/dashboard'); }
-    catch (ex) { setSt({ err: ex.message }); }
+    try {
+      const r = await api('/api/auth/login', { method: 'POST', body: { email, code: otp ? code : undefined }, auth: null });
+      if (r.otp) { setOtp(true); setSt({ ok: t('We have sent a 6-digit code to your email.', 'आपके ईमेल पर 6 अंकों का कोड भेजा गया है।') }); return; }
+      setToken(r.token); router.push('/dashboard');
+    } catch (ex) { setSt({ err: ex.message }); }
   };
-  const reg = mode === 'register';
   return (
     <form className="authbox" onSubmit={go}>
-      <h2 className="center">{reg ? t('Create Account', 'नया अकाउंट बनाएँ') : t('Welcome Back', 'फिर से स्वागत है')}</h2>
-      <p className="center muted">{reg ? t('Create an account to order and access your reports.', 'ऑर्डर करने और अपनी रिपोर्ट देखने के लिए अकाउंट बनाएँ।') : t('Login to view and download your reports.', 'अपनी रिपोर्ट देखने और डाउनलोड करने के लिए लॉगिन करें।')}</p>
-      {reg && <label>{t('Full name', 'पूरा नाम')}<input required value={f.name || ''} onChange={u('name')} /></label>}
-      {reg && <label>{t('Mobile (WhatsApp)', 'मोबाइल (WhatsApp)')}<input required type="tel" value={f.phone || ''} onChange={u('phone')} placeholder={t('10-digit number', '10 अंकों का नंबर')} /></label>}
-      <label>{t('Email', 'ईमेल')}<input required type="email" value={f.email || ''} onChange={u('email')} /></label>
-      <label>{t('Password', 'पासवर्ड')}<input required type="password" minLength={6} value={f.password || ''} onChange={u('password')} /></label>
-      {st.err && <div className="alert">{st.err}</div>}
-      <button className="btn btn-block" disabled={st.busy}>{st.busy ? t('Please wait…', 'कृपया रुकें…') : reg ? t('Create Account', 'अकाउंट बनाएँ') : t('Login', 'लॉगिन')}</button>
-      <p className="center fine" style={{ marginTop: 16 }}>
-        {reg ? <>{t('Already have an account?', 'पहले से अकाउंट है?')} <Link href="/login" style={{ color: 'var(--saf)' }}>{t('Login', 'लॉगिन')}</Link></> : <>{t('New here?', 'नए हैं?')} <Link href="/register" style={{ color: 'var(--saf)' }}>{t('Create an account', 'अकाउंट बनाएँ')}</Link></>}
-      </p>
-      {!reg && <p className="center fine">{t(`Forgot your password? Email us at ${mail} from your registered email.`, `पासवर्ड भूल गए? अपने रजिस्टर्ड ईमेल से ${mail} पर हमें लिखें।`)}</p>}
+      <h2 className="center">{t('View Your Reports', 'अपनी रिपोर्ट देखें')}</h2>
+      <p className="center muted">{t('Enter the email you used while ordering.', 'वही ईमेल डालें जिससे आपने ऑर्डर किया था।')}</p>
+      <label>{t('Email', 'ईमेल')}<input required type="email" value={email} onChange={(e) => { setEmail(e.target.value); setOtp(false); }} placeholder="name@gmail.com" /></label>
+      {otp && <label>{t('Login code', 'लॉगिन कोड')}<input required inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} placeholder="123456" /></label>}
+      {st.err && <div className="alert">{st.err}</div>}{st.ok && !st.err && <div className="note">{st.ok}</div>}
+      <button className="btn btn-block" disabled={st.busy}>{st.busy ? t('Please wait…', 'कृपया रुकें…') : otp ? t('Verify & Login', 'कोड डालकर लॉगिन करें') : t('Continue', 'आगे बढ़ें')}</button>
+      <p className="center fine" style={{ marginTop: 16 }}>{t('No password needed.', 'पासवर्ड की ज़रूरत नहीं।')} {t('New here?', 'नए हैं?')} <Link href="/services" style={{ color: 'var(--saf)' }}>{t('Order a report', 'रिपोर्ट मँगवाएँ')}</Link></p>
+      <p className="center fine">{t(`Need help? Write to ${mail}`, `मदद चाहिए? ${mail} पर लिखें`)}</p>
     </form>
   );
 }
