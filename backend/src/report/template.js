@@ -18,7 +18,7 @@ const box = (title, sub, extra = '', cls = '') => `<div class="card ${cls}"><div
 let uid = 0;
 let REPORT = '';
 const setReport = (name) => { REPORT = name; };
-const EMBLEM = (size = 30) => `<svg width="${size}" height="${size}" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#7a1d1d"/><circle cx="32" cy="32" r="26.5" fill="none" stroke="#d9b56a" stroke-width="1.4"/><text x="32" y="43" text-anchor="middle" font-size="30" fill="#f3d58f" font-family="'Noto Sans Devanagari',sans-serif">ॐ</text></svg>`;
+const EMBLEM = (size = 30) => `<svg width="${size}" height="${size}" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#d4651a"/><circle cx="32" cy="32" r="26.5" fill="none" stroke="#fff" stroke-width="1.4"/><text x="32" y="43" text-anchor="middle" font-size="30" fill="#fff" font-family="'Noto Sans Devanagari',sans-serif">ॐ</text></svg>`;
 const page = (title, sub, body) => `<section class="page" data-uid="p${++uid}"><div class="frame"></div><div class="wm"></div>
   <div class="topbar"><span class="tb-l">${EMBLEM(22)}<b>Astrology<i>Mitra</i></b></span><span class="tb-r">${esc(REPORT)}</span></div>
   <header class="ph"><h2 class="pt">${esc(title)}</h2>${squiggle.replace('class="sq"', 'class="sq big"')}<div class="sub">${esc(sub || '')}</div></header>
