@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const db = require('./db');
 const { q, getSettings, setSettings, SECRET_KEYS } = db;
 const SERVICES = require('./services');
@@ -242,10 +243,18 @@ app.get('/api/dl/:token', wrap(async (req, res) => {
 }));
 
 // ================= ADMIN =================
+// Admin password: the one set from the admin panel (stored hashed) wins; otherwise ADMIN_PASSWORD from the server env.
+// Setting ADMIN_PASSWORD_RESET=1 on the server clears the panel password at startup (emergency recovery).
+const adminHash = async () => (await q("SELECT value FROM settings WHERE key='admin_password_hash'")).rows[0]?.value || '';
+const envPassOk = (p) => !!ADMIN_PASSWORD && p.length === ADMIN_PASSWORD.length && crypto.timingSafeEqual(Buffer.from(p), Buffer.from(ADMIN_PASSWORD));
+async function adminPassOk(p) {
+  const h = await adminHash();
+  return h ? bcrypt.compare(p, h) : envPassOk(p);
+}
 app.post('/api/admin/login', wrap(async (req, res) => {
   const { email, password } = req.body || {};
-  if (!ADMIN_PASSWORD) throw fail(503, 'ADMIN_PASSWORD is not set on the server');
-  const ok = str(email).toLowerCase() === ADMIN_EMAIL && String(password || '').length === ADMIN_PASSWORD.length && crypto.timingSafeEqual(Buffer.from(String(password)), Buffer.from(ADMIN_PASSWORD));
+  if (!ADMIN_PASSWORD && !(await adminHash())) throw fail(503, 'ADMIN_PASSWORD is not set on the server');
+  const ok = str(email).toLowerCase() === ADMIN_EMAIL && (await adminPassOk(String(password || '')));
   if (!ok) throw fail(401, 'Invalid admin credentials');
   res.json({ token: sign({ role: 'admin' }, '7d') });
 }));
@@ -312,9 +321,18 @@ admin.delete('/messages/:id', wrap(async (req, res) => { await q('DELETE FROM me
 admin.get('/settings', wrap(async (_req, res) => {
   const s = await getSettings();
   for (const k of SECRET_KEYS) s[k] = s[k] ? `••••••${s[k].slice(-4)}` : '';
+  delete s.admin_password_hash;
   res.json(s);
 }));
 admin.put('/settings', wrap(async (req, res) => { await setSettings(req.body || {}); res.json({ ok: true }); }));
+admin.post('/password', wrap(async (req, res) => {
+  const { current, next } = req.body || {};
+  if (!(await adminPassOk(String(current || '')))) throw fail(400, 'Current password is incorrect');
+  const n = String(next || '');
+  if (n.length < 8) throw fail(400, 'New password must be at least 8 characters');
+  await q("INSERT INTO settings(key,value) VALUES('admin_password_hash',$1) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value", [await bcrypt.hash(n, 10)]);
+  res.json({ ok: true });
+}));
 admin.get('/services', wrap(async (_req, res) => {
   const { rows } = await q('SELECT * FROM services');
   res.json(SERVICES.map((s) => ({ ...s, ...(rows.find((r) => r.slug === s.slug) || {}) })));
@@ -350,7 +368,8 @@ app.use('/api/admin', admin);
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 
 const PORT = process.env.PORT || 8080;
-db.migrate().then(() => {
+db.migrate().then(async () => {
+  if (process.env.ADMIN_PASSWORD_RESET === '1') { await q("DELETE FROM settings WHERE key='admin_password_hash'"); console.log('[admin] panel password cleared; ADMIN_PASSWORD from env is active'); }
   app.listen(PORT, () => console.log(`AstrologyMitra API on :${PORT}`));
   jobs.start();
 }).catch((e) => { console.error('Database init failed:', e.message); process.exit(1); });

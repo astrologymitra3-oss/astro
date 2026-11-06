@@ -182,6 +182,28 @@ function Settings() {
   );
 }
 
+function ChangePassword() {
+  const [f, setF] = useState({});
+  const [msg, setMsg] = useState({});
+  const u = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const save = async (e) => {
+    e.preventDefault(); setMsg({});
+    if (f.next !== f.confirm) return setMsg({ err: 'New password and confirm password do not match' });
+    try { await aapi('/api/admin/password', { method: 'POST', body: { current: f.current, next: f.next } }); setF({}); setMsg({ ok: 'Password changed. Use the new password from your next login.' }); }
+    catch (ex) { setMsg({ err: ex.message }); }
+  };
+  return (
+    <form className="ad-box" onSubmit={save} style={{ maxWidth: 460, marginTop: 24 }}>
+      <h3>Change Admin Password</h3>
+      <label>Current password<input type="password" required value={f.current || ''} onChange={u('current')} /></label>
+      <label>New password<input type="password" required minLength={8} value={f.next || ''} onChange={u('next')} placeholder="At least 8 characters" /></label>
+      <label>Confirm new password<input type="password" required minLength={8} value={f.confirm || ''} onChange={u('confirm')} /></label>
+      {msg.err && <div className="alert">{msg.err}</div>}{msg.ok && <div className="note">{msg.ok}</div>}
+      <button className="btn btn-sm">Change Password</button>
+    </form>
+  );
+}
+
 const TABS = [['overview', 'Overview'], ['orders', 'Orders & Forms'], ['users', 'Customers'], ['messages', 'Messages'], ['services', 'Services & Pricing'], ['settings', 'Settings']];
 
 export default function Admin() {
@@ -207,7 +229,7 @@ export default function Admin() {
         {tab === 'users' && <List path="/api/admin/users" cols={[['id', '#'], ['name', 'Name'], ['email', 'Email'], ['phone', 'Phone', (v) => v ? <a href={`https://wa.me/${waNum(v)}`} target="_blank" rel="noreferrer">{v}</a> : '-'], ['orders', 'Paid orders'], ['spent', 'Spent ₹'], ['created_at', 'Joined', fmt]]} />}
         {tab === 'messages' && <List path="/api/admin/messages" del cols={[['created_at', 'Date', fmt], ['name', 'Name'], ['email', 'Email', (v) => <a href={`mailto:${v}`}>{v}</a>], ['phone', 'Phone'], ['message', 'Message']]} />}
         {tab === 'services' && <Services />}
-        {tab === 'settings' && <Settings />}
+        {tab === 'settings' && <><Settings /><ChangePassword /></>}
       </section>
     </div>
   );
