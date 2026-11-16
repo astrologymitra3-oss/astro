@@ -1,18 +1,12 @@
 // Logo mark and small line icons
 export function Logo({ size = 46 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
-      <circle cx="32" cy="32" r="30" fill="#d4651a" />
-      <circle cx="32" cy="32" r="26.5" fill="none" stroke="#fff" strokeWidth="1.2" />
-      <text x="32" y="43" textAnchor="middle" fontSize="30" fill="#fff" fontFamily="'Noto Sans Devanagari','Hind',sans-serif">ॐ</text>
-    </svg>
-  );
+  return <img src="/logo.png" width={size} height={size} alt="AstrologyMitra" style={{ display: 'block', objectFit: 'contain' }} />;
 }
 
 export function Brand({ sub = 'ज्योतिष · लाल किताब · अंक शास्त्र' }) {
   return (
     <span className="brand">
-      <Logo />
+      <Logo size={60} />
       <span className="brand-t"><b>Astrology<i>Mitra</i></b><small>{sub}</small></span>
     </span>
   );

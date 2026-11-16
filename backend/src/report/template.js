@@ -17,10 +17,13 @@ const box = (title, sub, extra = '', cls = '') => `<div class="card ${cls}"><div
 
 let uid = 0;
 let REPORT = '';
+const WHEEL = `<svg class="tb-wheel" width="150" height="150" viewBox="0 0 150 150"><g fill="none" stroke="#e7c77e" stroke-width="1">${[70, 52, 34].map((r) => `<circle cx="75" cy="75" r="${r}"/>`).join('')}${Array.from({ length: 12 }, (_, i) => { const a = (i * Math.PI) / 6; return `<path d="M${75 + 34 * Math.cos(a)} ${75 + 34 * Math.sin(a)}L${75 + 70 * Math.cos(a)} ${75 + 70 * Math.sin(a)}"/>`; }).join('')}</g>${Array.from({ length: 12 }, (_, i) => { const a = ((i + 0.5) * Math.PI) / 6; return `<circle cx="${75 + 61 * Math.cos(a)}" cy="${75 + 61 * Math.sin(a)}" r="2.2" fill="#e7c77e"/>`; }).join('')}</svg>`;
 const setReport = (name) => { REPORT = name; };
-const EMBLEM = (size = 30) => `<svg width="${size}" height="${size}" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#d4651a"/><circle cx="32" cy="32" r="26.5" fill="none" stroke="#fff" stroke-width="1.4"/><text x="32" y="43" text-anchor="middle" font-size="30" fill="#fff" font-family="'Noto Sans Devanagari',sans-serif">ॐ</text></svg>`;
+// Brand logo (report/logo.png) embedded as a data URI so the PDF needs no network for it
+const LOGO_URI = `data:image/png;base64,${require('fs').readFileSync(require('path').join(__dirname, 'logo.png')).toString('base64')}`;
+const EMBLEM = (size = 30) => `<img src="${LOGO_URI}" width="${size}" height="${size}" style="display:block;object-fit:contain" alt="AstrologyMitra">`;
 const page = (title, sub, body) => `<section class="page" data-uid="p${++uid}"><div class="frame"></div><div class="wm"></div>
-  <div class="topbar"><span class="tb-l">${EMBLEM(22)}<b>Astrology<i>Mitra</i></b></span><span class="tb-r">${esc(REPORT)}</span></div>
+  <div class="topbar">${WHEEL}<span class="tb-l">${EMBLEM(34)}<span><b>Astrology<i>Mitra</i></b><small>ज्योतिष मित्र</small></span></span><span class="tb-r">${esc(REPORT)}</span></div>
   <header class="ph"><h2 class="pt">${esc(title)}</h2>${squiggle.replace('class="sq"', 'class="sq big"')}<div class="sub">${esc(sub || '')}</div></header>
   <div class="content">${body}</div>
   <footer class="pf"><span>AstrologyMitra · ${esc(REPORT)}</span><span class="pn"></span><span>astrologymitra.com</span></footer></section>`;
@@ -33,13 +36,13 @@ function cover({ title, name, lines = [], hindi }) {
   <div class="cv-frame"></div><div class="cv-frame2"></div>
   <div class="cn-wrap tl">${corner(0)}</div><div class="cn-wrap tr">${corner(90)}</div><div class="cn-wrap br">${corner(180)}</div><div class="cn-wrap bl">${corner(270)}</div>
   <div class="ganesh">॥ श्री गणेशाय नमः ॥</div>
-  <div class="mandala"><svg width="300" height="300" viewBox="0 0 300 300">${petals(16, 62, 132, 20, 0.95)}${petals(16, 62, 112, 13, 0.6).replace(/rotate\((\d+(?:\.\d+)?)/g, (m, d) => `rotate(${+d + 11.25}`)}${dots}<circle cx="150" cy="150" r="58" fill="none" stroke="#d9b56a" stroke-width="1.2"/></svg><div class="emb">${EMBLEM(104)}</div></div>
+  <div class="mandala"><svg width="300" height="300" viewBox="0 0 300 300">${petals(16, 74, 138, 20, 0.95)}${petals(16, 74, 120, 13, 0.6).replace(/rotate\((\d+(?:\.\d+)?)/g, (m, d) => `rotate(${+d + 11.25}`)}${dots}<circle cx="150" cy="150" r="70" fill="rgba(255,246,227,.06)" stroke="#d9b56a" stroke-width="1.2"/></svg><div class="emb">${EMBLEM(132)}</div></div>
   <div class="cv-title">${esc(title)}</div>
   <svg class="cv-div" width="220" height="12" viewBox="0 0 220 12"><path d="M0 6H96M124 6H220" stroke="#d9b56a" stroke-width="1"/><path d="M110 0L116 6L110 12L104 6Z" fill="#d9b56a"/><circle cx="96" cy="6" r="2" fill="#d9b56a"/><circle cx="124" cy="6" r="2" fill="#d9b56a"/></svg>
   <div class="cv-for">${hindi ? 'विशेष रूप से तैयार' : 'specially prepared for'}</div>
   <div class="cv-name">${esc(name)}</div>
   ${lines.map((l) => `<div class="cv-line">${esc(l)}</div>`).join('')}
-  <div class="cv-brand">${EMBLEM(40)}<div><b>Astrology<i>Mitra</i></b><span>ज्योतिष मित्र · astrologymitra.com</span></div></div>
+  <div class="cv-brand">${EMBLEM(56)}<div><b>Astrology<i>Mitra</i></b><span>ज्योतिष मित्र · astrologymitra.com</span></div></div>
   <div class="method">Lahiri (Chitrapaksha) Ayanamsa · Parashari System · ${hindi ? 'पंडित जी द्वारा तैयार' : 'Prepared by Pandit ji'}</div></section>`;
 }
 
@@ -86,19 +89,23 @@ body{font-family:'Hind','Noto Sans Devanagari','Noto Sans',sans-serif;color:var(
 .frame{position:absolute;inset:6mm;border:1.2px solid var(--gold);pointer-events:none}
 .frame:after{content:'';position:absolute;inset:1.4mm;border:0.6px solid var(--gold2)}
 .wm{position:absolute;left:50%;top:52%;width:150mm;height:150mm;transform:translate(-50%,-50%);background:${WM} center/contain no-repeat;opacity:.07;pointer-events:none}
-.topbar{position:relative;flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;border-bottom:0.8px solid var(--line);padding:1mm 1mm 2.4mm;margin-bottom:4mm}
-.tb-l{display:flex;align-items:center;gap:6px}.tb-l b{font:700 13px 'Cormorant Garamond','Noto Serif',serif;color:var(--mar);letter-spacing:.3px}.tb-l i{font-style:normal;color:var(--saf)}
-.tb-r{font-size:10px;color:var(--mut);letter-spacing:.5px;text-transform:uppercase}
+.topbar{position:relative;overflow:hidden;flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;margin:-5.6mm -7.6mm 5mm;padding:2.6mm 7mm;min-height:15mm;background:linear-gradient(100deg,#5c1414 0%,#6b1a2c 45%,#3d1a5c 100%);border-bottom:2px solid var(--gold)}
+.tb-wheel{position:absolute;right:-28px;top:50%;transform:translateY(-50%);opacity:.22}
+.tb-l{position:relative;display:flex;align-items:center;gap:8px}.tb-l b{display:block;font:700 16px 'Cormorant Garamond','Noto Serif',serif;color:#fff6e3;letter-spacing:.3px;line-height:1.1}.tb-l i{font-style:normal;color:#f0b25e}.tb-l small{display:block;font-size:8.5px;color:#e7c77e;letter-spacing:.6px}
+.tb-r{position:relative;font-size:10px;color:#f3dfb3;letter-spacing:1px;text-transform:uppercase;border:0.8px solid rgba(231,199,126,.6);padding:3px 9px;border-radius:2px;margin-right:22mm}
+.hi .tb-r{text-transform:none;letter-spacing:.3px;font-size:10.5px}
 .ph{position:relative;flex:0 0 auto;text-align:center;margin-bottom:5px}
 .pt{margin:0;font:700 26px 'Cormorant Garamond','Noto Serif',serif;color:var(--mar);letter-spacing:.3px}
 .hi .pt{font-family:'Tiro Devanagari Hindi','Noto Serif Devanagari',serif;font-weight:400;font-size:24px}
 .sq.big{display:block;margin:3px auto 0}
 .sub{color:var(--mut);font-size:10.5px;margin-top:3px;font-style:italic}
 .content{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;padding:4px 1mm 0}
-.pf{position:relative;flex:0 0 19mm;display:flex;align-items:flex-start;justify-content:space-between;font-size:9.5px;color:var(--mut);padding:2.5mm 1mm 0;border-top:0.8px solid var(--line);margin-top:2mm}
+.pf{position:relative;flex:0 0 19mm;display:flex;align-items:flex-start;justify-content:space-between;font-size:9.5px;color:var(--mut);padding:2.5mm 1mm 0;border-top:1.4px solid var(--gold);margin-top:2mm}
 .pn{position:relative;isolation:isolate;display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center;color:var(--mar);font-size:10px;font-weight:700}
 .pn:before{content:'';position:absolute;inset:4px;transform:rotate(45deg);border:1px solid var(--gold);background:#fff;z-index:-1}
-h3{font:700 17px 'Cormorant Garamond','Noto Serif',serif;color:var(--mar);margin:12px 0 6px;padding-bottom:3px;border-bottom:0.8px solid var(--line)}
+h3{font:700 17px 'Cormorant Garamond','Noto Serif',serif;color:var(--mar);margin:12px 0 6px;padding:0 0 3px 16px;border-bottom:0.8px solid var(--line);position:relative}
+h3:before{content:'';position:absolute;left:1px;top:7px;width:7px;height:7px;background:var(--gold);transform:rotate(45deg)}
+h3.center{padding-left:0}h3.center:before{display:none}
 .hi h3{font-family:'Tiro Devanagari Hindi','Noto Serif Devanagari',serif;font-weight:400;font-size:16px}
 h3 .sq{display:block;margin-top:2px}
 h4{margin:0 0 4px;color:var(--mar);font-size:12.5px}
