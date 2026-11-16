@@ -124,7 +124,11 @@ export default function OrderForm({ service }) {
       )}
       {!authed && (
         <fieldset className="fs acc">
-          <legend>{t('Your contact details', 'आपकी जानकारी')}</legend>
+          <legend>{t('Where should we send your report?', 'रिपोर्ट कहाँ भेजें?')}</legend>
+          <div className="why-box">
+            <b>🔒 {t('Only for delivering your report', 'सिर्फ़ आपकी रिपोर्ट भेजने के लिए')}</b>
+            <span>{t('Your PDF report is sent to this email. The mobile number is only used to reach you about your report. We never share your details or send spam.', 'आपकी PDF रिपोर्ट इसी ईमेल पर भेजी जाएगी। मोबाइल नंबर सिर्फ़ रिपोर्ट से जुड़ी बात के लिए है। आपकी जानकारी किसी से शेयर नहीं होती और कोई स्पैम नहीं भेजा जाता।')}</span>
+          </div>
           <div className="row2"><label>{t('Mobile (WhatsApp)', 'मोबाइल (WhatsApp)')}<input required type="tel" pattern="\+?[0-9\s-]{10,15}" value={acc.phone || ''} onChange={ua('phone')} placeholder={t('10-digit number', '10 अंकों का नंबर')} /></label><label>{t('Email', 'ईमेल')}<input required type="email" value={acc.email || ''} onChange={ua('email')} placeholder="name@gmail.com" /></label></div>
           <p className="fine" style={{ textAlign: 'left', marginTop: -4, marginBottom: 10 }}>{t('Your report is sent to this email. To see it again later, just log in with this email. No password needed.', 'रिपोर्ट इसी ईमेल पर भेजी जाएगी। बाद में दोबारा देखने के लिए बस इसी ईमेल से लॉगिन करें, पासवर्ड की ज़रूरत नहीं।')}</p>
         </fieldset>
