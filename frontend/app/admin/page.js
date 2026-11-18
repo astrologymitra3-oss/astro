@@ -1,6 +1,6 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
-import { api, getToken, setToken, downloadPdf } from '../../lib/api';
+import { api, API, getToken, setToken, downloadPdf } from '../../lib/api';
 import { Logo } from '../../components/Art';
 import './admin.css';
 
@@ -13,13 +13,34 @@ const waNum = (p) => { const d = String(p || '').replace(/\D/g, ''); return d.le
 function Login({ onIn }) {
   const [f, setF] = useState({});
   const [err, setErr] = useState('');
-  const go = async (e) => { e.preventDefault(); setErr(''); try { const r = await api('/api/admin/login', { method: 'POST', body: f, auth: null }); setToken(r.token, A); onIn(); } catch (ex) { setErr(ex.message); } };
+  const [note, setNote] = useState('');
+  const [mode, setMode] = useState('login'); // login | forgot | reset
+  const [token, setTok] = useState('');
+  useEffect(() => { const t = new URLSearchParams(window.location.search).get('reset'); if (t) { setTok(t); setMode('reset'); } }, []);
+  const go = async (e) => {
+    e.preventDefault(); setErr(''); setNote('');
+    try {
+      if (mode === 'login') { const r = await api('/api/admin/login', { method: 'POST', body: f, auth: null }); setToken(r.token, A); onIn(); }
+      else if (mode === 'forgot') { await api('/api/admin/forgot', { method: 'POST', body: { email: f.email }, auth: null }); setNote('If this is the admin email, a reset link has been sent. Check your inbox (and spam).'); }
+      else {
+        if (f.next !== f.confirm) return setErr('Passwords do not match');
+        await api('/api/admin/reset', { method: 'POST', body: { token, next: f.next }, auth: null });
+        window.history.replaceState(null, '', '/admin'); setMode('login'); setNote('Password changed. Please login with the new password.');
+      }
+    } catch (ex) { setErr(ex.message); }
+  };
   return (
     <div className="ad-login"><form onSubmit={go}>
       <div className="ad-brand"><Logo size={44} /><b>AstrologyMitra Admin</b></div>
-      <label>Email<input required type="email" onChange={(e) => setF({ ...f, email: e.target.value })} /></label>
-      <label>Password<input required type="password" onChange={(e) => setF({ ...f, password: e.target.value })} /></label>
-      {err && <div className="alert">{err}</div>}<button className="btn btn-block">Login</button>
+      {mode !== 'reset' && <label>Email<input required type="email" onChange={(e) => setF({ ...f, email: e.target.value })} /></label>}
+      {mode === 'login' && <label>Password<input required type="password" onChange={(e) => setF({ ...f, password: e.target.value })} /></label>}
+      {mode === 'reset' && <><label>New password<input required type="password" minLength={8} onChange={(e) => setF({ ...f, next: e.target.value })} /></label><label>Confirm new password<input required type="password" minLength={8} onChange={(e) => setF({ ...f, confirm: e.target.value })} /></label></>}
+      {err && <div className="alert">{err}</div>}{note && <div className="note">{note}</div>}
+      <button className="btn btn-block">{mode === 'login' ? 'Login' : mode === 'forgot' ? 'Send reset link' : 'Set new password'}</button>
+      <p className="hint" style={{ textAlign: 'center', marginTop: 12 }}>
+        {mode === 'login' ? <a href="#" onClick={(e) => { e.preventDefault(); setMode('forgot'); setErr(''); }} style={{ color: '#d4651a' }}>Forgot password?</a>
+          : <a href="#" onClick={(e) => { e.preventDefault(); setMode('login'); setErr(''); }} style={{ color: '#d4651a' }}>Back to login</a>}
+      </p>
     </form></div>
   );
 }
@@ -52,6 +73,21 @@ function Orders({ initial }) {
     if (a === 'delete' && !confirm(`Delete order AM-${o.id}?`)) return;
     try { await aapi(`/api/admin/orders/${o.id}${a === 'delete' ? '' : '/' + a}`, { method: a === 'delete' ? 'DELETE' : method }); setMsg({ ok: `Done: ${a} for AM-${o.id}` }); setView(null); load(); } catch (e) { setMsg({ err: e.message }); }
   };
+  const attach = (o) => {
+    if (o.status === 'ready' && !confirm(`Replace the current PDF of AM-${o.id} with your own file?`)) return;
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'application/pdf,.pdf';
+    inp.onchange = async () => {
+      const file = inp.files[0]; if (!file) return;
+      setMsg({ ok: `Uploading ${file.name}…` });
+      try {
+        const r = await fetch(`${API}/api/admin/orders/${o.id}/pdf`, { method: 'PUT', headers: { 'Content-Type': 'application/pdf', Authorization: `Bearer ${getToken(A)}` }, body: file });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j.error || 'Upload failed');
+        setMsg({ ok: `PDF attached to AM-${o.id}. The customer will get this file${new Date(o.release_at) > Date.now() ? ' at the release time' : ''}.` }); load();
+      } catch (e) { setMsg({ err: e.message }); }
+    };
+    inp.click();
+  };
   const share = async (o, to) => {
     const w = window.open('', '_blank');
     try {
@@ -79,7 +115,7 @@ function Orders({ initial }) {
               <td>{o.for}</td>
               <td>{o.user_name}<br /><small>{o.user_email}<br />{o.user_phone}</small></td>
               <td>{o.amount}{o.razorpay_payment_id === 'TEST-BYPASS' && <><br /><small>test</small></>}</td>
-              <td><span className={`st st-${o.status}`}>{STATUS[o.status]}</span>{o.status === 'ready' && <><br /><small>{o.emailed ? 'Emailed ✓' : 'Not emailed'}</small></>}{o.error && <><br /><small className="err">{o.error}</small></>}</td>
+              <td><span className={`st st-${o.status}`}>{STATUS[o.status]}</span>{o.status === 'ready' && <><br /><small>{o.emailed ? 'Emailed ✓' : 'Not emailed'}</small></>}{o.pdf_source === 'admin' && <><br /><small style={{ color: '#2f7a4a', fontWeight: 600 }}>Admin PDF attached</small></>}{o.error && <><br /><small className="err">{o.error}</small></>}</td>
               <td><small>{o.status === 'pending' ? '-' : fmt(o.release_at)}</small>{o.status !== 'pending' && new Date(o.release_at) > Date.now() && <><br /><small className="err">Hidden from customer till then</small></>}</td>
               <td className="ad-act">
                 <button onClick={() => setView(o)}>View</button>
@@ -88,7 +124,8 @@ function Orders({ initial }) {
                 <button className="wa" onClick={() => share(o, 'me')}>WhatsApp me</button>
                 {o.status === 'ready' && <button onClick={() => act(o, 'email')}>Email</button>}
                 {o.status !== 'pending' && new Date(o.release_at) > Date.now() && <button onClick={() => act(o, 'release')}>Release now</button>}
-                {o.status !== 'pending' && <button onClick={() => act(o, 'regenerate')}>Regenerate</button>}
+                {o.status !== 'pending' && <button onClick={() => attach(o)}>{o.status === 'ready' ? 'Replace PDF' : 'Attach PDF'}</button>}
+                {o.status !== 'pending' && <button onClick={() => (o.pdf_source !== 'admin' || confirm('This will replace the PDF you attached with a newly generated one. Continue?')) && act(o, 'regenerate')}>Regenerate</button>}
                 {o.status === 'pending' && <button onClick={() => act(o, 'mark-paid')}>Mark paid</button>}
                 <button className="del" onClick={() => act(o, 'delete')}>Delete</button>
               </td>
@@ -168,13 +205,28 @@ function Settings() {
           {F('delivery_delay_minutes', 'Or custom minutes', 'number')}
           <p className="hint">The PDF is generated right after payment. Until this time the customer sees “Pandit ji is preparing your report”; the email is sent when it is released.</p>
         </div>
-        <div className="ad-box"><h3>Email (SMTP)</h3>
-          {F('smtp_host', 'SMTP host', 'text', 'smtp.gmail.com')}{F('smtp_port', 'Port', 'number', '465')}{F('smtp_user', 'Username', 'text', 'astrologymitra3@gmail.com')}{F('smtp_pass', 'Password / App password', 'password')}{F('smtp_from', 'From name & email', 'text', 'AstrologyMitra <astrologymitra3@gmail.com>')}
-          <p className="hint">For Gmail use smtp.gmail.com, port 465 and a Google App Password.</p>
+        <div className="ad-box"><h3>Email</h3>
+          <label>Email provider<select value={s.mail_provider || 'smtp'} onChange={u('mail_provider')}>
+            <option value="smtp">SMTP - Gmail App Password (needs Railway Pro)</option>
+            <option value="brevo">Brevo API (works on any Railway plan)</option>
+            <option value="resend">Resend API (works on any Railway plan)</option>
+          </select></label>
+          {(s.mail_provider || 'smtp') === 'smtp' ? (
+            <>
+              {F('smtp_host', 'SMTP host', 'text', 'smtp.gmail.com')}{F('smtp_port', 'Port', 'number', '465')}{F('smtp_user', 'Gmail address', 'text', 'yourname@gmail.com')}{F('smtp_pass', 'Gmail App Password (16 letters)', 'password', 'abcd efgh ijkl mnop')}
+              <p className="hint">Gmail: turn on 2-Step Verification, then create an App Password at myaccount.google.com/apppasswords and paste it here. Note: Railway Free/Hobby plans block SMTP; use Brevo or Resend there.</p>
+            </>
+          ) : (
+            <>
+              {F('mail_api_key', s.mail_provider === 'brevo' ? 'Brevo API key (SMTP & API > API Keys)' : 'Resend API key', 'password')}
+              <p className="hint">{s.mail_provider === 'brevo' ? 'Brevo free plan: 300 emails/day. Verify your sender email (or domain) in Brevo > Senders.' : 'Resend free plan: 3,000 emails/month. Verify astrologymitra.com in Resend > Domains (add the DNS records it shows).'}</p>
+            </>
+          )}
+          {F('smtp_from', 'From (name & email)', 'text', 'AstrologyMitra <support@astrologymitra.com>')}
           <button type="button" className="btn btn-sm btn-line" onClick={() => test('smtp')}>Send test email</button>
         </div>
         <div className="ad-box"><h3>Notifications & Contact</h3>
-          <label className="chk"><input type="checkbox" checked={s.login_otp === '1'} onChange={u('login_otp')} /> Customer login with email OTP (a 6-digit code is emailed; needs SMTP). Off = login with email only.</label>{F('admin_email', 'Admin email (order notifications)', 'email')}{F('contact_email', 'Support email shown on website', 'email', 'support@astrologymitra.com')}{F('admin_whatsapp', 'Admin WhatsApp number', 'tel', '91XXXXXXXXXX')}{F('contact_phone', 'Public phone (optional)', 'tel')}{F('contact_address', 'Address')}
+          <label className="chk"><input type="checkbox" checked={s.login_otp === '1'} onChange={u('login_otp')} /> Customer login with email OTP (a 6-digit code is emailed; needs Email set up). Off = login with email only.</label>{F('admin_email', 'Admin email (order notifications)', 'email')}{F('contact_email', 'Support email shown on website', 'email', 'support@astrologymitra.com')}{F('admin_whatsapp', 'Admin WhatsApp number', 'tel', '91XXXXXXXXXX')}{F('contact_phone', 'Public phone (optional)', 'tel')}{F('contact_address', 'Address')}
         </div>
       </div>
       <button className="btn">Save Settings</button>

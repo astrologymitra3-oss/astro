@@ -6,7 +6,7 @@ const db = require('./db');
 const { q, getSettings, setSettings, SECRET_KEYS } = db;
 const SERVICES = require('./services');
 const { PROBLEMS } = require('./astro/data');
-const { sign, verify, optionalUser, requireUser, requireAdmin, wrap, fail, sendMail, geocode } = require('./util');
+const { sign, verify, optionalUser, requireUser, requireAdmin, wrap, fail, sendMail, mailReady, geocode } = require('./util');
 const jobs = require('./jobs');
 
 const app = express();
@@ -251,6 +251,25 @@ async function adminPassOk(p) {
   const h = await adminHash();
   return h ? bcrypt.compare(p, h) : envPassOk(p);
 }
+// Admin forgot password: emails a one-time reset link to ADMIN_EMAIL
+app.post('/api/admin/forgot', wrap(async (req, res) => {
+  const s = await getSettings();
+  if (str(req.body?.email).toLowerCase() === ADMIN_EMAIL && mailReady(s)) {
+    const t = sign({ purpose: 'admin-reset', h: (await adminHash()).slice(-12) }, '30m');
+    const link = `${(process.env.SITE_URL || (process.env.FRONTEND_URL || '').split(',')[0] || 'https://astrologymitra.com').trim().replace(/\/+$/, '')}/admin?reset=${t}`;
+    await sendMail(s, { to: ADMIN_EMAIL, subject: 'Reset your AstrologyMitra admin password', html: `<p>Click the link below to set a new admin password. It is valid for 30 minutes.</p><p><a href="${link}">${link}</a></p><p>If you did not ask for this, ignore this email.</p>` }).catch(() => {});
+  }
+  if (!mailReady(s)) throw fail(503, 'Email is not set up yet. Reset the password from Railway (ADMIN_PASSWORD_RESET=1).');
+  res.json({ ok: true });
+}));
+app.post('/api/admin/reset', wrap(async (req, res) => {
+  const p = verify(String(req.body?.token || ''));
+  if (!p || p.purpose !== 'admin-reset' || p.h !== (await adminHash()).slice(-12)) throw fail(400, 'This reset link is invalid or has already been used');
+  const n = String(req.body?.next || '');
+  if (n.length < 8) throw fail(400, 'New password must be at least 8 characters');
+  await q("INSERT INTO settings(key,value) VALUES('admin_password_hash',$1) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value", [await bcrypt.hash(n, 10)]);
+  res.json({ ok: true });
+}));
 app.post('/api/admin/login', wrap(async (req, res) => {
   const { email, password } = req.body || {};
   if (!ADMIN_PASSWORD && !(await adminHash())) throw fail(503, 'ADMIN_PASSWORD is not set on the server');
@@ -281,7 +300,7 @@ admin.get('/orders', wrap(async (req, res) => {
   const where = [], params = [];
   if (req.query.status) { params.push(req.query.status); where.push(`o.status=$${params.length}`); }
   if (req.query.q) { params.push(`%${str(req.query.q)}%`); where.push(`(u.email ILIKE $${params.length} OR u.name ILIKE $${params.length} OR u.phone ILIKE $${params.length} OR o.input::text ILIKE $${params.length} OR ('AM-' || o.id::text) ILIKE $${params.length})`); }
-  const { rows } = await q(`SELECT o.id, o.service, o.language, o.input, o.amount, o.status, o.paid_at, o.release_at, o.generated_at, o.emailed, o.error, o.pdf_pages, o.created_at, o.razorpay_payment_id,
+  const { rows } = await q(`SELECT o.id, o.service, o.language, o.input, o.amount, o.status, o.paid_at, o.release_at, o.generated_at, o.emailed, o.error, o.pdf_pages, o.pdf_source, o.created_at, o.razorpay_payment_id,
     u.name AS user_name, u.email AS user_email, u.phone AS user_phone FROM orders o LEFT JOIN users u ON u.id=o.user_id ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY o.id DESC LIMIT 500`, params);
   res.json(rows.map((o) => ({ ...o, service_name: svc(o.service)?.name, for: subjectName(o), customer_status: publicStatus(o) })));
 }));
@@ -300,9 +319,20 @@ admin.post('/orders/:id/email', wrap(async (req, res) => {
   const o = await getOrder(req.params.id);
   if (!o.pdf) throw fail(400, 'Report is not generated yet');
   const s = await getSettings();
-  if (!(await jobs.sendReportEmail(o, s))) throw fail(400, 'SMTP email is not configured in Settings');
+  if (!(await jobs.sendReportEmail(o, s).catch((e) => { throw fail(400, `Email failed: ${e.message}`); }))) throw fail(400, 'Email is not configured in Settings');
   await q('UPDATE orders SET emailed=true WHERE id=$1', [o.id]);
   res.json({ ok: true });
+}));
+// Admin uploads their own PDF to replace (or stand in for) the generated report
+admin.put('/orders/:id/pdf', express.raw({ type: 'application/pdf', limit: '25mb' }), wrap(async (req, res) => {
+  const o = await getOrder(req.params.id);
+  if (o.status === 'pending') throw fail(400, 'Mark the order as paid first');
+  const buf = req.body;
+  if (!Buffer.isBuffer(buf) || buf.length < 100 || buf.subarray(0, 5).toString() !== '%PDF-') throw fail(400, 'Please upload a valid PDF file');
+  const pages = (buf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length || null;
+  await q("UPDATE orders SET pdf=$2, pdf_pages=$3, pdf_source='admin', status='ready', error=NULL, generated_at=now(), emailed=false, updated_at=now() WHERE id=$1", [o.id, buf, pages]);
+  jobs.deliverDue().catch(() => {});
+  res.json({ ok: true, pages });
 }));
 admin.get('/orders/:id/pdf', wrap(async (req, res) => { const o = await getOrder(req.params.id); if (!o.pdf) throw fail(404, 'Report is not generated yet'); sendPdf(res, o); }));
 admin.get('/orders/:id/share', wrap(async (req, res) => {
@@ -353,8 +383,11 @@ admin.post('/test/openai', wrap(async (_req, res) => {
 admin.post('/test/smtp', wrap(async (_req, res) => {
   const s = await getSettings();
   try {
-    if (!(await sendMail(s, { to: s.admin_email, subject: 'AstrologyMitra SMTP test', html: '<p>SMTP is configured correctly.</p>' }))) throw new Error('SMTP host, user and password are required');
-  } catch (e) { throw fail(400, `Email failed: ${e.message}`); }
+    if (!(await sendMail(s, { to: s.admin_email, subject: 'AstrologyMitra email test', html: '<p>Email is configured correctly.</p>' }))) throw new Error(s.mail_provider && s.mail_provider !== 'smtp' ? 'API key and From email are required' : 'SMTP host, username and app password are required');
+  } catch (e) {
+    const blocked = /ETIMEDOUT|ECONNREFUSED|timeout|Greeting never received|Connection timeout/i.test(e.message) && (s.mail_provider || 'smtp') === 'smtp';
+    throw fail(400, blocked ? 'Could not connect to the SMTP server. On Railway Free/Hobby plans SMTP ports are blocked: switch Email provider to Brevo or Resend, or upgrade Railway to Pro.' : `Email failed: ${e.message}`);
+  }
   res.json({ ok: true, message: `Test email sent to ${s.admin_email}` });
 }));
 admin.post('/test/razorpay', wrap(async (_req, res) => {

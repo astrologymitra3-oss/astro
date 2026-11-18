@@ -11,11 +11,11 @@ const DEFAULT_SETTINGS = {
   openai_key: '', openai_model: 'gpt-4o-mini',
   razorpay_key_id: '', razorpay_key_secret: '', payment_bypass: '1',
   delivery_delay_minutes: '0', login_otp: '0',
-  smtp_host: '', smtp_port: '465', smtp_user: '', smtp_pass: '', smtp_from: '',
+  mail_provider: 'smtp', mail_api_key: '', smtp_host: 'smtp.gmail.com', smtp_port: '465', smtp_user: '', smtp_pass: '', smtp_from: '',
   admin_email: 'astrologymitra3@gmail.com', contact_email: 'support@astrologymitra.com', admin_whatsapp: '', contact_phone: '',
   contact_address: 'New Delhi, Delhi, India',
 };
-const SECRET_KEYS = ['openai_key', 'razorpay_key_secret', 'smtp_pass'];
+const SECRET_KEYS = ['openai_key', 'razorpay_key_secret', 'smtp_pass', 'mail_api_key'];
 
 async function migrate() {
   await pool.query(`
@@ -29,6 +29,7 @@ async function migrate() {
       emailed BOOLEAN DEFAULT false, error TEXT, pdf BYTEA, pdf_pages INTEGER, created_at TIMESTAMPTZ DEFAULT now(), updated_at TIMESTAMPTZ DEFAULT now());
     CREATE INDEX IF NOT EXISTS orders_user_idx ON orders(user_id);
     CREATE INDEX IF NOT EXISTS orders_status_idx ON orders(status);
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS pdf_source TEXT DEFAULT 'auto';
     CREATE TABLE IF NOT EXISTS messages (id SERIAL PRIMARY KEY, name TEXT, email TEXT, phone TEXT, message TEXT, created_at TIMESTAMPTZ DEFAULT now());
   `);
   for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) await pool.query('INSERT INTO settings(key,value) VALUES($1,$2) ON CONFLICT DO NOTHING', [k, v]);

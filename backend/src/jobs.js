@@ -1,7 +1,7 @@
 // Report generation queue + scheduled delivery (release_at) emails
 const { q, getSettings } = require('./db');
 const { buildReport } = require('./report/build');
-const { sendMail, sign } = require('./util');
+const { sendMail, mailReady, sign } = require('./util');
 const SERVICES = require('./services');
 
 const queue = [];
@@ -34,7 +34,7 @@ async function generate(id) {
   const s = await getSettings();
   try {
     const r = await buildReport(o, s);
-    await q("UPDATE orders SET status='ready', pdf=$2, pdf_pages=$3, generated_at=now(), emailed=false, updated_at=now() WHERE id=$1", [id, r.pdf, r.pages]);
+    await q("UPDATE orders SET status='ready', pdf=$2, pdf_pages=$3, pdf_source='auto', generated_at=now(), emailed=false, updated_at=now() WHERE id=$1", [id, r.pdf, r.pages]);
     console.log(`[gen] order ${id} ready (${r.pages} pages, tokens ${r.usage?.total_tokens ?? '-'})`);
     await deliverDue();
   } catch (e) {
@@ -65,7 +65,7 @@ async function deliverDue() {
   delivering = true;
   try {
     const s = await getSettings();
-    if (!s.smtp_host || !s.smtp_user || !s.smtp_pass) return;
+    if (!mailReady(s)) return;
     const { rows } = await q("SELECT o.*, u.email FROM orders o JOIN users u ON u.id=o.user_id WHERE o.status='ready' AND o.emailed=false AND o.release_at <= now() ORDER BY o.id LIMIT 10");
     for (const o of rows) {
       try { if (await sendReportEmail(o, s)) await q('UPDATE orders SET emailed=true WHERE id=$1', [o.id]); } catch (e) { console.error('[mail]', o.id, e.message); }
@@ -82,6 +82,13 @@ async function markPaid(id, paymentId) {
   if (!o) return false;
   enqueue(id);
   const { rows: [u] } = await q('SELECT name,email,phone FROM users WHERE id=$1', [o.user_id]);
+  // confirmation to the customer
+  if (u?.email) {
+    const hi = o.language === 'hi', when = new Date(o.release_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+    sendMail(s, { to: u.email, subject: hi ? `आपका ऑर्डर AM-${id} मिल गया - AstrologyMitra` : `Order AM-${id} received - AstrologyMitra`,
+      html: mailShell(hi ? `<p>नमस्ते ${u.name || ''} जी,</p><p>आपका <b>${svcName(o.service)}</b> ऑर्डर (AM-${id}) मिल गया है। पंडित जी आपकी रिपोर्ट तैयार कर रहे हैं। रिपोर्ट लगभग <b>${when}</b> तक इसी ईमेल पर और आपके डैशबोर्ड में मिल जाएगी।</p><p>सादर,<br/>टीम AstrologyMitra</p>`
+        : `<p>Namaste ${u.name || ''} ji,</p><p>We have received your <b>${svcName(o.service)}</b> order (AM-${id}). Pandit ji is preparing your report. It will reach this email and your dashboard by about <b>${when}</b>.</p><p>With blessings,<br/>Team AstrologyMitra</p>`, s) }).catch(() => {});
+  }
   const who = o.input.name || `${o.input.boy?.name} & ${o.input.girl?.name}`;
   sendMail(s, { to: s.admin_email, subject: `New order AM-${id}: ${svcName(o.service)} (₹${o.amount})`,
     html: mailShell(`<p><b>New paid order</b></p><p>Order: AM-${id}<br/>Service: ${svcName(o.service)}<br/>Language: ${o.language === 'hi' ? 'Hindi' : 'English'}<br/>Amount: ₹${o.amount}<br/>For: ${who}<br/>Customer: ${u?.name} · ${u?.email} · ${u?.phone || '-'}<br/>Release to customer: ${o.release_at.toISOString()}</p>`) }).catch(() => {});
